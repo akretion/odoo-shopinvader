@@ -14,8 +14,7 @@ from odoo.addons.component.core import Component
 
 
 class WishlistService(Component):
-    """Shopinvader service to manage current user's wishlists.
-    """
+    """Shopinvader service to manage current user's wishlists."""
 
     _name = "shopinvader.wishlist.service"
     _inherit = "base.shopinvader.service"

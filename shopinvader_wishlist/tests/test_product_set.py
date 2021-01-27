@@ -10,7 +10,7 @@ from odoo.addons.shopinvader.tests.common import CommonCase
 class ProductSet(CommonCase):
     @classmethod
     def setUpClass(cls):
-        super(ProductSet, cls).setUpClass()
+        super().setUpClass()
         cls.prod_set = cls.env.ref("shopinvader_wishlist.wishlist_1")
         cls.prod_set.shopinvader_backend_id = cls.backend
 

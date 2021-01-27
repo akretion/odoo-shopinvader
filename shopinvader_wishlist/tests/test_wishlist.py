@@ -11,7 +11,7 @@ from odoo.addons.shopinvader.tests.common import CommonCase
 class CommonWishlistCase(CommonCase):
     @classmethod
     def setUpClass(cls):
-        super(CommonWishlistCase, cls).setUpClass()
+        super().setUpClass()
         cls.partner = cls.env.ref("shopinvader.partner_1")
         cls.prod1 = cls.env.ref("product.product_product_11")
         cls.prod2 = cls.env.ref("product.product_product_13")
@@ -29,7 +29,7 @@ class CommonWishlistCase(CommonCase):
         }
 
     def setUp(self, *args, **kwargs):
-        super(CommonWishlistCase, self).setUp(*args, **kwargs)
+        super().setUp(*args, **kwargs)
         with self.work_on_services(partner=self.partner) as work:
             self.wishlist_service = work.component(usage="wishlist")
 
@@ -52,7 +52,7 @@ class CommonWishlistCase(CommonCase):
 class WishlistCase(CommonWishlistCase):
     @classmethod
     def setUpClass(cls):
-        super(WishlistCase, cls).setUpClass()
+        super().setUpClass()
         cls.prod_set = cls.env.ref("shopinvader_wishlist.wishlist_1")
         cls.prod_set.shopinvader_backend_id = cls.backend
 
