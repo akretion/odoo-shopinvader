@@ -9,3 +9,13 @@ openupgradelib @ git+https://github.com/OCA/openupgradelib.git
 
 unittest2 # For shopinvader test_controller, which inherits component
 odoo-test-helper
+
+
+
+### Pending PR
+
+odoo14-addon-storage_media_product @ git+https://github.com/akretion/storage.git@14.0-migrate#subdirectory=setup/storage_media_product
+odoo14-addon-storage_media @ git+https://github.com/akretion/storage.git@14.0-migrate#subdirectory=setup/storage_media
+odoo14-addon-storage_thumbnail @ git+https://github.com/akretion/storage.git@14.0-migrate#subdirectory=setup/storage_thumbnail
+odoo14-addon-storage_file @ git+https://github.com/akretion/storage.git@14.0-migrate#subdirectory=setup/storage_file
+odoo14-addon-storage_backend @ git+https://github.com/akretion/storage.git@14.0-migrate#subdirectory=setup/storage_backend
