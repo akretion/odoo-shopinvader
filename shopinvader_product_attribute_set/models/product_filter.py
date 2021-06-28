@@ -11,7 +11,6 @@ class ProductFilter(models.Model):
 
     based_on = fields.Selection(
         selection_add=[("product_attribute", "Product Attribute")],
-        ondelete={"product_attribute": "cascade"},
     )
     product_attribute_id = fields.Many2one(
         string="Product Attribute", comodel_name="attribute.attribute"
