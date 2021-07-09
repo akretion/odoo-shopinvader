@@ -39,7 +39,11 @@ class UtilsMixin(object):
         backend = backend or self.backend
         bind_wizard_model = self.env["shopinvader.variant.binding.wizard"]
         bind_wizard = bind_wizard_model.create(
-            {"backend_id": backend.id, "product_ids": [(6, 0, products.ids)]}
+            {
+                "backend_id": backend.id,
+                "product_ids": [(6, 0, products.ids)],
+                "run_immediately": True,
+            }
         )
         bind_wizard.bind_products()
 
@@ -193,8 +197,8 @@ class ProductCommonCase(CommonCase):
             ]
         )
         cls.env.user.company_id.currency_id = cls.env.ref("base.USD")
-        base_price_list = cls.env.ref("product.list0")
-        base_price_list.currency_id = cls.env.ref("base.USD")
+        cls.base_pricelist = cls.env.ref("product.list0")
+        cls.base_pricelist.currency_id = cls.env.ref("base.USD")
         cls.shopinvader_variant.record_id.currency_id = cls.env.ref("base.USD")
 
 
@@ -269,13 +273,19 @@ class CommonTestDownload(object):
         """
         self._test_download_not_allowed(service, target)
 
+    # FIXME: this seems duplicated in some common test cases
+
+    def _ensure_posted(self, invoice):
+        if invoice.state != "posted":
+            invoice._post()
+
     def _make_payment(self, invoice):
         """
         Make the invoice payment
         :param invoice: account.invoice recordset
         :return: bool
         """
-        invoice._post()
+        self._ensure_posted(invoice)
         ctx = {"active_ids": invoice.ids, "active_model": "account.move"}
         wizard_obj = self.register_payments_obj.with_context(ctx)
         register_payments = wizard_obj.create(
