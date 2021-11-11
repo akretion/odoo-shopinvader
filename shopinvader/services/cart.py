@@ -298,9 +298,9 @@ class CartService(Component):
 
     def _add_item(self, cart, params):
         self._check_allowed_product(cart, params)
-        existing_item = self._check_existing_cart_item(cart, params)
-        if existing_item:
-            self._upgrade_cart_item_quantity(cart, existing_item, params, action="sum")
+        item = self._check_existing_cart_item(cart, params)
+        if item:
+            self._upgrade_cart_item_quantity(cart, item, params, action="sum")
         else:
             with self.env.norecompute():
                 vals = self._prepare_cart_item(params, cart)
@@ -321,8 +321,9 @@ class CartService(Component):
                 ctx_lang = self.env.context.get("lang", partner.lang)
                 if partner.lang != ctx_lang:
                     vals["name"] = self._get_sale_order_line_name(vals)
-                self.env["sale.order.line"].create(vals)
+                item = self.env["sale.order.line"].create(vals)
             cart.recompute()
+        return item
 
     def _get_sale_order_line_name(self, vals):
         product = self.env["product.product"].browse(vals["product_id"])
