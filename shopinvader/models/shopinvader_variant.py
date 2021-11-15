@@ -7,10 +7,11 @@ from contextlib import contextmanager
 from itertools import groupby
 
 from odoo import _, api, fields, models
-from odoo.tools import float_compare, float_is_zero, float_round
+from odoo.tools import float_compare, float_is_zero
 
 from odoo.addons.queue_job.exception import RetryableJobError
 
+from ..utils import float_round
 from .tools import sanitize_attr_name
 
 
@@ -231,10 +232,12 @@ class ShopinvaderVariant(models.Model):
         price_unit = AccountTax._fix_tax_included_price_company(
             price_unit, product.taxes_id, taxes, company
         )
+        price_dp = self.env["decimal.precision"].precision_get("Product Price")
+        price_unit = float_round(price_unit, price_dp)
         res = {
             "value": price_unit,
             "tax_included": any(tax.price_include for tax in taxes),
-            # Default values in case price.discuont_policy != "without_discount"
+            # Default values in case price.discount_policy != "without_discount"
             "original_value": price_unit,
             "discount": 0.0,
         }
@@ -277,6 +280,7 @@ class ShopinvaderVariant(models.Model):
             original_price_unit = AccountTax._fix_tax_included_price_company(
                 original_price_unit, product.taxes_id, taxes, company
             )
+            original_price_unit = float_round(original_price_unit, price_dp)
             res.update(
                 {
                     "original_value": original_price_unit,
