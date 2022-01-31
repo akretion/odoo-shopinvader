@@ -18,12 +18,28 @@ class ShopinvaderBackend(models.Model):
 
     @api.model
     def _get_from_jwt_aud(self, aud):
+        """On a record, ensure aud is valid
+        on an empty recordset, will retrieve a record
+        with aud"""
         if not aud:
             return self.browse([])
         if isinstance(aud, str):
             aud = [aud]
-        backends = self.search([("jwt_aud", "in", aud)])
-        if len(backends) != 1:
-            _logger.warning("%d backends found for JWT aud %r", aud)
-            return self.browse([])
-        return backends
+        if len(self.ids > 0):
+            # self is a recordset
+            if aud in self.jwt_aud:
+                return self
+            else:
+                _logger.warning(
+                    "Inconsistency between provided backend"
+                    " and audience in jwt: "
+                    f"Backend {self.name} ({self.jwt_aud} != {aud})"
+                )
+                return self.browse([])
+        else:
+            # self is an empty recordset
+            backends = self.search([("jwt_aud", "in", aud)])
+            if len(backends) != 1:
+                _logger.warning(f"More than one backend found for JWT aud {aud}")
+                return self.browse([])
+            return backends
