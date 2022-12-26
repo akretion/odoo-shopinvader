@@ -5,7 +5,7 @@
 {
     "name": "shopinvader_gift_card",
     "summary": "Shopinvader Services for Gift Cards",
-    "version": "14.0.1.0.0",
+    "version": "14.0.2.0.0",
     "category": "e-commerce",
     "website": "https://github.com/shopinvader/odoo-shopinvader",
     "author": "Akretion, Odoo Community Association (OCA)",
@@ -24,7 +24,6 @@
         "demo/demo.xml",
     ],
     "data": [
-        "data/data.xml",
         "views/gift_card.xml",
     ],
 }
