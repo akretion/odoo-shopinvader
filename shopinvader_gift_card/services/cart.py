@@ -4,7 +4,6 @@
 
 from datetime import date
 
-from odoo.addons.base_rest.components.service import to_bool
 from odoo.addons.component.core import Component
 
 
@@ -16,74 +15,49 @@ class CartService(Component):
     _inherit = "shopinvader.cart.service"
 
     def _convert_one_line(self, line):
-        if line.gift_card_id:
-            line.price_unit = line.gift_card_id.initial_amount
         res = super()._convert_one_line(line)
-        res.update(self._get_gift_card_id(line))
+        res.update({"gift_card_ids": line.gift_card_ids.ids})
         return res
-
-    def _get_gift_card_id(self, line):
-        return {"gift_card_id": line.gift_card_id.id}
-
-    def add_item(self, **params):
-        gift_card_tmpl_id = params.get("gift_card_tmpl_id")
-        gift_card_tmpl = self.env["gift.card.template"].search(
-            [("id", "=", gift_card_tmpl_id)], limit=1
-        )
-        if gift_card_tmpl:
-            card = self._add_gift_card(gift_card_tmpl, params)
-            params["gift_card_id"] = card.id
-        return super().add_item(**params)
-
-    def _prepare_cart_item(self, params, cart):
-        res = super()._prepare_cart_item(params, cart)
-        res.update(self._gift_card_values_from_params(params))
-        return res
-
-    def _gift_card_values_from_params(self, params):
-        if "gift_card_id" in params:
-            return {
-                "gift_card_id": params.pop("gift_card_id") or False,
-            }
-        return {}
 
     def _add_item(self, cart, params):
-        self._check_allowed_product(cart, params)
-        item = self._check_existing_cart_item(cart, params)
-        if hasattr(item, "gift_card_id"):
-            with self.env.norecompute():
-                self._create_cart_line(cart, params)
-            cart.recompute()
-            return item
-        else:
-            return super()._add_item(cart, params)
+        item = super()._add_item(cart, params)
+        gift_tmpl = item.product_id.product_tmpl_id.gift_cart_template_ids
+        if gift_tmpl:
+            item.price_unit = params.get("initial_amount")
+            cards = self._create_gift_cards(item, gift_tmpl, params)
+            item.gift_card_ids = cards
+        return item
 
-    def _add_gift_card(self, gift_card_tmpl, params):
-        card = self.env["gift.card"].create(
-            {
+    def _create_gift_cards(self, item, gift_card_tmpl, params):
+        cards = self.env["gift.card"].search(
+            [
+                ("sale_line_id", "=", item.id),
+            ]
+        )
+        while len(cards) < int(item.product_uom_qty):
+            vals = {
+                "sale_line_id": item.id,
                 "initial_amount": params.get("initial_amount"),
                 "is_divisible": gift_card_tmpl.is_divisible,
                 "duration": gift_card_tmpl.duration,
                 "gift_card_tmpl_id": gift_card_tmpl.id,
-                "start_date": params.get("start_date"),
                 "comment": params.get("comment"),
                 "beneficiary_name": params.get("beneficiary_name"),
                 "beneficiary_email": params.get("beneficiary_email"),
                 "buyer_id": params.get("buyer_id"),
                 "buyer_name": params.get("buyer_name"),
                 "buyer_email": params.get("buyer_email"),
-                "state": "draft",
                 "shopinvader_backend_id": self.shopinvader_backend.id,
             }
-        )
-        return card
+            if "start_date" in params and params.get("start_date"):
+                vals["start_date"] = params.get("start_date")
+            new_card = self.env["gift.card"].create(vals)
+            cards |= new_card
+        return cards
 
     def _get_gift_card_schema(self):
         return {
             "initial_amount": {"coerce": float, "required": False, "type": "float"},
-            "is_divisible": {"coerce": to_bool, "type": "boolean"},
-            "duration": {"coerce": int, "required": False, "type": "integer"},
-            "gift_card_tmpl_id": {"coerce": int, "required": False, "type": "integer"},
             "start_date": {"type": "date", "coerce": to_date},
             "comment": {"type": "string", "required": False},
             "beneficiary_name": {"type": "string", "required": False},
@@ -95,8 +69,6 @@ class CartService(Component):
             },
             "buyer_name": {"type": "string", "required": False},
             "buyer_email": {"type": "string", "required": False},
-            "state": {"type": "string", "required": False},
-            "gift_card_id": {"coerce": int, "required": False, "type": "integer"},
         }
 
     def _validator_add_item(self):

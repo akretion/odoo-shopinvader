@@ -8,4 +8,4 @@ from odoo import fields, models
 class SaleOrderLine(models.Model):
     _inherit = "sale.order.line"
 
-    gift_card_id = fields.Many2one("gift.card")
+    gift_card_ids = fields.Many2one("gift.card", inverse_name="sale_line_id")
