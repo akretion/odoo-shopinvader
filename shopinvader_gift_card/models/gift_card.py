@@ -35,9 +35,3 @@ class GiftCard(models.Model):
         if self.shopinvader_backend_id:
             self.shopinvader_backend_id._send_notification("gift_card_created", self)
             self.email_buyer_sent = True
-
-
-class GiftCardLine(models.Model):
-    _inherit = "gift.card.line"
-
-    sale_order_id = fields.Many2one(comodel_name="sale.order", readonly=True)

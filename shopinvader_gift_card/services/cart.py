@@ -16,25 +16,32 @@ class CartService(Component):
 
     def _convert_one_line(self, line):
         res = super()._convert_one_line(line)
-        res.update({"gift_card_ids": line.gift_card_ids.ids})
+        res.update({"gift_card_id": line.gift_card_ids.id})
         return res
 
     def _add_item(self, cart, params):
-        item = super()._add_item(cart, params)
-        gift_tmpl = item.product_id.product_tmpl_id.gift_cart_template_ids
+        self._check_allowed_product(cart, params)
+        item = None
+        product = self.env["product.product"].browse(params["product_id"])
+        gift_tmpl = product.product_tmpl_id.gift_cart_template_ids
         if gift_tmpl:
+            # When the product is a gift card, always create a new line, never edit it
+            with self.env.norecompute():
+                item = self._create_cart_line(cart, params)
             item.price_unit = params.get("initial_amount")
-            cards = self._create_gift_cards(item, gift_tmpl, params)
-            item.gift_card_ids = cards
+            self._create_gift_cards(item, gift_tmpl, params)
+            cart.recompute()
+        else:
+            item = super()._add_item(cart, params)
         return item
 
     def _create_gift_cards(self, item, gift_card_tmpl, params):
-        cards = self.env["gift.card"].search(
+        card = self.env["gift.card"].search(
             [
                 ("sale_line_id", "=", item.id),
             ]
         )
-        while len(cards) < int(item.product_uom_qty):
+        if not card:
             vals = {
                 "sale_line_id": item.id,
                 "initial_amount": params.get("initial_amount"),
@@ -51,9 +58,8 @@ class CartService(Component):
             }
             if "start_date" in params and params.get("start_date"):
                 vals["start_date"] = params.get("start_date")
-            new_card = self.env["gift.card"].create(vals)
-            cards |= new_card
-        return cards
+            card = self.env["gift.card"].create(vals)
+        return card
 
     def _get_gift_card_schema(self):
         return {
