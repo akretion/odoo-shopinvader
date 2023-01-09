@@ -389,7 +389,7 @@ class ProductProduct(models.Model):
         for product in self:
             # TODO: bug dans odoo? price_type = null if pricelist.item = False
             # https://github.com/odoo/odoo/pull/109443
-            price = product[price_type] if price_type or 0.0
+            price = product[price_type] if price_type else 0.0
             price_currency = product.currency_id
             if price_type == 'standard_price':
                 price_currency = product.cost_currency_id
