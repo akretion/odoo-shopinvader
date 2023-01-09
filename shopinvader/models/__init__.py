@@ -5,6 +5,7 @@
 from . import seo_title_mixin
 from . import product_filter
 from . import product_product
+from . import product_pricelist
 from . import product_template
 from . import product_category
 from . import sale

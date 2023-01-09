@@ -243,7 +243,7 @@ class ShopinvaderVariant(models.Model):
         # Handle pricelists.discount_policy == "without_discount"
         if pricelist and pricelist.discount_policy == "without_discount":
             # Get the price rule
-            price_unit, rule_id = pricelist.get_product_price_rule(
+            price_unit, rule_id = pricelist._get_product_price_rule_backportedv16(
                 product, qty, None, date=date
             )
             # Get the price before applying the pricelist
