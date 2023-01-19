@@ -19,6 +19,7 @@ JSONIFY_GIFT_CARD_LINE = [
 JSONIFY_GIFT_CARD = [
     "id",
     "name",
+    "code",
     "active",
     "state",
     "is_divisible",
@@ -98,6 +99,7 @@ class GiftCardOutput(Datamodel):
 
     id = fields.Integer()
     name = fields.String()
+    code = fields.String()
 
     active = fields.Boolean()
     state = fields.String()
@@ -109,8 +111,8 @@ class GiftCardOutput(Datamodel):
     gift_card_tmpl = fields.NestedModel("name.and.id", allow_none=True)
 
     start_date = fields.Date()
-    end_date = fields.Date()
-    duration = fields.Float()
+    end_date = fields.Date(allow_none=True)
+    duration = fields.Float(allow_none=True)
 
     beneficiary_name = fields.String(allow_none=True)
     beneficiary_email = fields.String(allow_none=True)
@@ -121,9 +123,19 @@ class GiftCardOutput(Datamodel):
 
     comment = fields.String(allow_none=True)
 
-    gift_card_lines = fields.NestedModel("gift.card.line.output", many=True, allow_none=True)
+    gift_card_lines = fields.NestedModel(
+        "gift.card.line.output", many=True, allow_none=True
+    )
     # TEMP: remove when fixed in front
-    gift_card_line_id = fields.NestedModel("gift.card.line.output", many=True, allow_none=True)
+    gift_card_line_id = fields.NestedModel(
+        "gift.card.line.output", many=True, allow_none=True
+    )
+
+
+class GiftCardCode(Datamodel):
+    _name = "gift.card.code"
+
+    code = fields.String()
 
 
 class ServiceGiftCardShopinvader(Component):
@@ -147,19 +159,21 @@ class ServiceGiftCardShopinvader(Component):
         return self.env.datamodels["gift.card.output"].load(self._to_json(record))
 
     @restapi.method(
-        routes=[(["/<int:id>"], "GET")],
-        output_param=restapi.Datamodel("gift.card.output"),
-    )
-    def get(self, _id):
-        record = self._get(_id)
-        return self._return_record(record)
-
-    @restapi.method(
         routes=[(["/search"], "GET")],
+        input_param=restapi.Datamodel("gift.card.code"),
         output_param=restapi.Datamodel("gift.card.search.output"),
     )
-    def search(self):
+    def search(self, params):
         domain = self._get_base_search_domain()
+        if params.code:
+            domain.append(("code", "=", params.code))
+        else:
+            if self.partner and self.partner.email:
+                # return only cards for the current partner if there is no code
+                domain.append(("beneficiary_email", "=", self.partner.email))
+            else:
+                # Do not return anything if there is no partner and no code
+                domain.append(("id", "=", False))
         records = self.env[self._expose_model].search(domain)
         result = {"size": len(records), "data": self._to_json(records, many=True)}
         return self.env.datamodels["gift.card.search.output"].load(result)
