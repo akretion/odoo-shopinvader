@@ -52,10 +52,8 @@ class ShopinvaderVariant(models.Model):
     )
     main = fields.Boolean(compute="_compute_main_product")
     active = fields.Boolean(
-        default=True,
         compute="_compute_active",
         store=True,
-        readonly=False,
     )
     price = fields.Serialized(compute="_compute_price", string="Shopinvader Price")
     short_name = fields.Char(compute="_compute_names")
@@ -76,11 +74,7 @@ class ShopinvaderVariant(models.Model):
     def _compute_active(self):
         """Deactivate bindings if related records are archived"""
         for rec in self:
-            rec.active = (
-                rec.active
-                and rec.shopinvader_product_id.active
-                and rec.record_id.active
-            )
+            rec.active = rec.shopinvader_product_id.active and rec.record_id.active
 
     @api.depends("product_template_attribute_value_ids")
     def _compute_attribute_value_ids(self):

@@ -155,6 +155,7 @@
                                     name="shopinvader_variant_ids"
                                     nolabel="1"
                                     readonly="1"
+                                    context="{'active_test': False}"
                                 >
                                     <tree>
                                         <field name="id" />
