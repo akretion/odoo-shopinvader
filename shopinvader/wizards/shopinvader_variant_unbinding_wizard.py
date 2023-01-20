@@ -26,7 +26,9 @@ class ShopinvaderVariantUnbindingWizard(models.TransientModel):
 
     def unbind_products(self):
         for wizard in self:
-            wizard.shopinvader_variant_ids.write({"active": False})
+            wizard.shopinvader_variant_ids.shopinvader_product_id.write(
+                {"active": False}
+            )
 
     @api.model
     def unbind_langs(self, backend, lang_ids):
