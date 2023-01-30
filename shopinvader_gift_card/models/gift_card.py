@@ -2,7 +2,7 @@
 # @author Kévin Roche <kevin.roche@akretion.com>
 # License AGPL-3.0 or later (http://www.gnu.org/licenses/agpl).
 
-from odoo import fields, models
+from odoo import api, fields, models
 
 
 class GiftCard(models.Model):
@@ -35,3 +35,21 @@ class GiftCard(models.Model):
         if self.shopinvader_backend_id:
             self.shopinvader_backend_id._send_notification("gift_card_created", self)
             self.email_buyer_sent = True
+
+    @api.model
+    def cron_update_gift_card_state(self):
+        super().cron_update_gift_card_state()
+        cards = self.search(
+            [
+                ("state", "in", ["active", "not_activated"]),
+                ("shopinvader_backend_id", "!=", False),
+                "|",
+                ("email_beneficiary_sent", "!=", True),
+                ("email_buyer_sent", "!=", True),
+            ]
+        )
+        for card in cards:
+            if not card.email_buyer_sent:
+                card.send_email_to_buyer()
+            if card.state == "active" and not card.email_beneficiary_sent:
+                card.send_email_to_beneficiary()
