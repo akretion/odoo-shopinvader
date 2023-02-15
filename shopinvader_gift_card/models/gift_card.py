@@ -41,7 +41,7 @@ class GiftCard(models.Model):
         super().cron_update_gift_card_state()
         cards = self.search(
             [
-                ("state", "in", ["active", "not_activated"]),
+                ("state", "in", ["active"]),
                 ("shopinvader_backend_id", "!=", False),
                 "|",
                 ("email_beneficiary_sent", "!=", True),
@@ -49,7 +49,7 @@ class GiftCard(models.Model):
             ]
         )
         for card in cards:
-            if not card.email_buyer_sent:
+            if card.state == "active" and not card.email_buyer_sent:
                 card.send_email_to_buyer()
             if card.state == "active" and not card.email_beneficiary_sent:
                 card.send_email_to_beneficiary()
