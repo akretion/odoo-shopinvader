@@ -4,7 +4,7 @@
 
 {
     "name": "Partner Company",
-    "version": "10.0.1.0.0",
+    "version": "14.0.1.0.0",
     "author": "Akretion",
     "website": "https://github.com/shopinvader/odoo-shopinvader",
     "license": "AGPL-3",
@@ -13,5 +13,5 @@
     "depends": ["base"],
     "data": ["views/partner_view.xml", "views/users_view.xml"],
     "demo": ["demo/partner.xml"],
-    "installable": False,
+    "installable": True,
 }

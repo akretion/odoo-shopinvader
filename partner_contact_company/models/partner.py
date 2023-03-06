@@ -25,7 +25,6 @@ class ResPartner(models.Model):
         compute="_compute_name", required=False, store=True, readonly=True
     )
 
-    @api.multi
     def copy(self, default=None):
         """Ensure partners are copied right.
 
@@ -35,7 +34,6 @@ class ResPartner(models.Model):
         """
         return super(ResPartner, self.with_context(copy=True)).copy(default)
 
-    @api.multi
     @api.depends("company", "contact_name")
     def _compute_name(self):
         """Write the 'name' field according to splitted data."""
@@ -45,7 +43,6 @@ class ResPartner(models.Model):
             )
             record.name = name
 
-    @api.multi
     def _inverse_name(self):
         """Try to revert the effect of :meth:`._compute_name`."""
         for record in self:
@@ -59,7 +56,6 @@ class ResPartner(models.Model):
             record.company = company
             record.contact_name = contact_name
 
-    @api.multi
     def name_get(self):
         res = []
         for partner in self:
@@ -127,7 +123,6 @@ class ResPartner(models.Model):
         vals["name"] = "/"
         return super(ResPartner, self).create(vals)
 
-    @api.multi
     def write(self, vals):
         if "name" in vals:
             self._process_name(vals)
