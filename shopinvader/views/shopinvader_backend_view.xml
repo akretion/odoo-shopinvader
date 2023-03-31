@@ -178,6 +178,7 @@
                             >
                                 <field name="invoice_linked_to_sale_only" />
                                 <field name="invoice_access_open" />
+                                <field name="invoice_get_child_invoice" />
                             </group>
                             <group name="invoice_report" string="Invoice report">
                                 <field

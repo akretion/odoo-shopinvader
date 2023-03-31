@@ -102,6 +102,7 @@ class InvoiceService(Component):
             "type_label": {"type": "string"},
             "state_label": {"type": "string"},
             "payment_state_label": {"type": "string"},
+            "partner_shipping": {"type": "string"}
         }
         return invoice_schema
 
@@ -131,6 +132,7 @@ class InvoiceService(Component):
             "payment_state",
             "move_type:type",
             "amount_residual:amount_due",
+            "partner_shipping_id:partner_shipping"
         ]
         return to_parse
 

@@ -160,6 +160,7 @@ class ShopinvaderBackend(models.Model):
         default={
             "invoice_linked_to_sale_only": True,
             "invoice_access_open": False,
+            "invoice_get_child_invoice": False,
         }
     )
     # TODO: move to portal mode?
@@ -173,6 +174,12 @@ class ShopinvaderBackend(models.Model):
         default=False,
         string="Open invoices",
         help="Give customer access to open invoices as well as the paid ones.",
+        sparse="invoice_settings",
+    )
+    invoice_get_child_invoice = fields.Boolean(
+        default=True,
+        string="See child partner invoice",
+        help="Allow parent partner to query their child invoice",
         sparse="invoice_settings",
     )
     invoice_report_id = fields.Many2one(

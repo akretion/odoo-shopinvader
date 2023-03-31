@@ -66,20 +66,22 @@ class InvoiceService(Component):
         """Retrieve invoices for current customer."""
         # here we only allow access to invoices linked to a sale order of the
         # current customer
+        search_domain = [("partner_id", "=", self.partner.id)]
+        parent_partner_domain = ["|", ("partner_id.parent_id", "=", self.partner.id)]
+        if self.shopinvader_backend.invoice_get_child_invoice:
+            search_domain = parent_partner_domain + search_domain
         if self.shopinvader_backend.invoice_linked_to_sale_only:
             so_domain = self._get_sale_order_domain()
+            # This is really hacky
+            new_domain = so_domain[0:2] + parent_partner_domain + so_domain[2:]
             # invoice_ids on sale.order is a computed field...
             # to avoid to duplicate the logic, we search for the sale orders
             # and check if the invoice_id is into the list of sale.invoice_ids
-            sales = self.env["sale.order"].search(so_domain)
+            sales = self.env["sale.order"].search(new_domain)
             invoices = sales.mapped("invoice_ids")
         else:
-            invoices = self.env["account.move"].search(
-                [
-                    ("partner_id", "=", self.partner.id),
-                    ("move_type", "in", ["out_invoice", "out_refund"]),
-                ]
-            )
+            search_domain.extend([("move_type", "in", ["out_invoice", "out_refund"])])
+            invoices = self.env["account.move"].search(search_domain)
         return invoices
 
     def _get_sale_order_domain(self):
