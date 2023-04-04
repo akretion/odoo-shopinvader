@@ -86,6 +86,7 @@ class TestStockMove(SellerGroupBackendMixin, CommonCase):
                 ],
                 "picking_policy": "direct",
                 "shopinvader_backend_id": cls.backend.id,
+                "client_order_ref": "COR01",
             }
         )
 
@@ -111,6 +112,7 @@ class TestStockMove(SellerGroupBackendMixin, CommonCase):
                 ],
                 "picking_policy": "direct",
                 "shopinvader_backend_id": cls.backend.id,
+                "client_order_ref": "COR02",
             }
         )
         cls.so3 = cls.env["sale.order"].create(
@@ -134,6 +136,7 @@ class TestStockMove(SellerGroupBackendMixin, CommonCase):
                 ],
                 "picking_policy": "direct",
                 "shopinvader_backend_id": cls.backend.id,
+                "client_order_ref": "COR03",
             }
         )
         cls.so1.action_confirm()
@@ -158,15 +161,19 @@ class TestStockMove(SellerGroupBackendMixin, CommonCase):
         self.assertEquals(len(moves), 4)
         self.assertEquals(moves[0]["product"]["name"], "Product A")
         self.assertEquals(moves[0]["sale"]["sale_id"], self.so1.id)
+        self.assertEquals(moves[0]["sale"]["client_order_ref"], "COR01")
         self.assertEquals(moves[0]["delivery_product_qty"], 10)
         self.assertEquals(moves[1]["product"]["name"], "Product B")
         self.assertEquals(moves[1]["sale"]["sale_id"], self.so1.id)
+        self.assertEquals(moves[1]["sale"]["client_order_ref"], "COR01")
         self.assertEquals(moves[1]["delivery_product_qty"], 20)
         self.assertEquals(moves[2]["product"]["name"], "Product A")
         self.assertEquals(moves[2]["sale"]["sale_id"], self.so2.id)
+        self.assertEquals(moves[2]["sale"]["client_order_ref"], "COR02")
         self.assertEquals(moves[2]["delivery_product_qty"], 14)
         self.assertEquals(moves[3]["product"]["name"], "Product C")
         self.assertEquals(moves[3]["sale"]["sale_id"], self.so2.id)
+        self.assertEquals(moves[3]["sale"]["client_order_ref"], "COR02")
         self.assertEquals(moves[3]["delivery_product_qty"], 7)
 
     def test_search_delivery_move_as_customer_2(self):
@@ -177,12 +184,15 @@ class TestStockMove(SellerGroupBackendMixin, CommonCase):
         self.assertEquals(len(moves), 3)
         self.assertEquals(moves[0]["product"]["name"], "Product A")
         self.assertEquals(moves[0]["sale"]["sale_id"], self.so3.id)
+        self.assertEquals(moves[0]["sale"]["client_order_ref"], "COR03")
         self.assertEquals(moves[0]["delivery_product_qty"], 6)
         self.assertEquals(moves[1]["product"]["name"], "Product B")
         self.assertEquals(moves[1]["sale"]["sale_id"], self.so3.id)
+        self.assertEquals(moves[1]["sale"]["client_order_ref"], "COR03")
         self.assertEquals(moves[1]["delivery_product_qty"], 8)
         self.assertEquals(moves[2]["product"]["name"], "Product C")
         self.assertEquals(moves[2]["sale"]["sale_id"], self.so3.id)
+        self.assertEquals(moves[2]["sale"]["client_order_ref"], "COR03")
         self.assertEquals(moves[2]["delivery_product_qty"], 10)
 
     def test_search_delivery_move_as_seller(self):
