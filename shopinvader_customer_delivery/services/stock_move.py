@@ -125,6 +125,7 @@ class DeliveryMoveService(Component):
                     "state": {"type": "string"},
                     "date_order": {"type": "string", "nullable": True},
                     "name": {"type": "string", "nullable": True},
+                    "client_order_ref": {"type": "string", "nullable": True},
                 },
             },
         }
@@ -211,6 +212,7 @@ class DeliveryMoveService(Component):
             "state",
             "amount_total",
             "date_order",
+            "client_order_ref",
         ]
         return to_parse
 
