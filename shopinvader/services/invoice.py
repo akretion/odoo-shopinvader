@@ -67,7 +67,7 @@ class InvoiceService(Component):
         # here we only allow access to invoices linked to a sale order of the
         # current customer
         search_domain = [("partner_id", "=", self.partner.id)]
-        parent_partner_domain = ["|", ("partner_id.parent_id", "=", self.partner.id)]
+        parent_partner_domain = ["|", ("commercial_partner_id", "=", self.partner.id)]
         if self.shopinvader_backend.invoice_get_child_invoice:
             search_domain = parent_partner_domain + search_domain
         if self.shopinvader_backend.invoice_linked_to_sale_only:
