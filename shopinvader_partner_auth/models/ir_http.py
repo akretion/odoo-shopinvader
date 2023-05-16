@@ -27,17 +27,19 @@ class IrHttp(models.AbstractModel):
             return super()._get_directory_auth()
 
     @classmethod
+    def _prepare_guest_partner(cls):
+        return {
+            "name": "guest",
+            "guest": True,
+            "active": False,
+        }
+
+    @classmethod
     def _create_guest_partner(cls):
         if hasattr(request, "auth_res_partner_id") and request.auth_res_partner_id:
             return
         # Create guest partner for cart if partner is not logged
-        partner = request.env["res.partner"].create(
-            {
-                "name": "guest",
-                "guest": True,
-                "active": False,
-            }
-        )
+        partner = request.env["res.partner"].create(cls._prepare_guest_partner())
         request.auth_res_partner_id = partner.id
         request.auth_directory_id = cls._get_directory_auth().id
 
