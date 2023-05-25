@@ -32,7 +32,9 @@ class ResPartner(models.Model):
         ignored in :meth:`~.create` because it also copies explicitly firstname
         and lastname fields.
         """
-        return super(ResPartner, self.with_context(copy=True)).copy(default)
+        res = super(ResPartner, self.with_context(copy=True)).copy(default)
+        res.write({"company": self.company, "contact_name": self.contact_name})
+        return res
 
     @api.depends("company", "contact_name")
     def _compute_name(self):
