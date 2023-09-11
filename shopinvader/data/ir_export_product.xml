@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<odoo>
+    <record id="ir_exp_shopinvader_variant" model="ir.exports">
+        <field name="name">Shopinvader Product Export</field>
+        <field name="resource">product.product</field>
+    </record>
+
+    <record id="ir_exp_shopinvader_variant_record_id" model="ir.exports.line">
+        <field name="name">id</field>
+        <field name="export_id" ref="ir_exp_shopinvader_variant" />
+    </record>
+</odoo>

@@ -1,0 +1,3 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_shopinvader_backend_manage,shopinvader_backend shopinvader manage,model_shopinvader_backend,shopinvader.group_shopinvader_manager,1,1,1,1
+access_shopinvader_backend_read,shopinvader_backend shopinvader user,model_shopinvader_backend,base.group_user,1,0,0,0

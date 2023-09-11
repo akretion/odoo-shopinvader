@@ -4,12 +4,25 @@
 {
     "name": "Shopinvader",
     "summary": "Shopinvader",
-    "version": "14.0.5.24.12",
+    "version": "16.0.1.0.0",
     "category": "e-commerce",
     "website": "https://github.com/shopinvader/odoo-shopinvader",
     "author": "Akretion",
     "license": "AGPL-3",
     "application": True,
     "installable": True,
-    "depends": ["shopinvader_restapi", "shopinvader_product_binding"],
+    "depends": [
+        "product",
+        "sale",
+        "server_environment",
+    ],
+    "data": [
+        "security/shopinvader_security.xml",
+        "security/ir.model.access.csv",
+        "security/shopinvader_backend_security.xml",
+        "data/ir_export_category.xml",
+        "data/ir_export_product.xml",
+        "views/menu.xml",
+        "views/shopinvader_backend.xml",
+    ],
 }

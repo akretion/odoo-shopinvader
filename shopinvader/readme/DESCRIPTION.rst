@@ -1,7 +1,3 @@
-This is shopinvader the odoo module for the new generation of e-commerce.
+Temporary module while shopinvader v16 is ready
 
-ShopInvader is an ecommerce software to create and manage easily your online store with Odoo.
-
-This is the Odoo side of the `Shopinvader E-commerce Solution`_.
-
-.. _Shopinvader E-commerce Solution: https://shopinvader.com
+Only present to allow the installation of dependend modules

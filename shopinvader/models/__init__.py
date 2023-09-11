@@ -1,1 +1,1 @@
-from . import ir_model
+from . import shopinvader_backend

@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<odoo>
+    <record id="shopinvader_backend_view_form" model="ir.ui.view">
+        <field name="model">shopinvader.backend</field>
+        <field name="arch" type="xml">
+            <form string="Shopinvader Website">
+                <header>
+                </header>
+                <sheet>
+                    <div class="oe_button_box" name="buttons">
+                    </div>
+                    <label for="name" class="oe_edit_only" />
+                    <h1>
+                        <field name="name" class="oe_inline" />
+                    </h1>
+                    <notebook>
+                        <page name="config" string="Main">
+                            <group name="config_main">
+                                <group name="config" colspan="2" col="2">
+                                <field
+                                        name="company_id"
+                                        widget="selection"
+                                        groups="base.group_multi_company"
+                                    />
+                                </group>
+                                <group name="auth" colspan="2" col="2">
+                                </group>
+                            </group>
+                        </page>
+                        <page name="sale" string="Sale">
+                        </page>
+                        <page name="search_eng" string="Search engine">
+                        </page>
+                        <page name="products" string="Products">
+                        </page>
+                        <page name="localization" string="Localization">
+                        </page>
+                        <page name="email" string="Notifications">
+                        </page>
+                        <page name="delivery" string="Delivery">
+                        </page>
+                        <page name="invoices" string="Invoices">
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_shopinvader_backend_tree" model="ir.ui.view">
+        <field name="model">shopinvader.backend</field>
+        <field name="arch" type="xml">
+            <tree>
+                <field name="name" />
+                <field name="tech_name" />
+                <field
+                    name="company_id"
+                    widget="selection"
+                    groups="base.group_multi_company"
+                    optional="show"
+                />
+            </tree>
+        </field>
+    </record>
+
+    <record id="action_shopinvader_backend" model="ir.actions.act_window">
+        <field name="name">Shopinvader Website</field>
+        <field name="res_model">shopinvader.backend</field>
+        <field name="view_mode">tree,form</field>
+        <field name="view_id" ref="view_shopinvader_backend_tree" />
+    </record>
+
+    <menuitem
+        id="menu_shopinvader_backend"
+        name="Websites"
+        sequence="0"
+        parent="shopinvader.menu_shopinvader_root"
+        action="action_shopinvader_backend"
+    />
+
+</odoo>
