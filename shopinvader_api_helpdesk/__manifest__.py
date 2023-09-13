@@ -11,6 +11,7 @@
         "extendable_fastapi",
         "fastapi",
         "shopinvader",
+        "shopinvader_auth_api_key",
         "helpdesk_mgmt",
         "helpdesk_mgmt_sale",  # Sale info on helpdesk tickets
     ],
@@ -26,6 +27,7 @@
         # "security/helpdesk_security.xml",
         # "security/ir.model.access.csv",
         # "views/helpdesk_settings.xml",
+        "data/fastapi_endpoint.xml",
     ],
     "installable": True,
 }

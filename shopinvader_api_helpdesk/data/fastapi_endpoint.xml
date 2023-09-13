@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<odoo>
+  <record model="fastapi.endpoint" id="douze_fastapi_endpoint">
+    <field name="name">Shopinvader API Helpdesk</field>
+    <field name="app">shopinvader_api_helpdesk</field>
+    <field name="shopinvader_api_helpdesk_auth_method">api_key</field>
+    <field name="root_path">/shopinvader/</field>
+  </record>
+</odoo>

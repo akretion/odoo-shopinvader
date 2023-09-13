@@ -7,7 +7,7 @@ from odoo.exceptions import UserError
 class HelpdeskTicket(models.Model):
     _inherit = "helpdesk.ticket"
 
-    # shopinvader_backend_id = fields.Many2one(comodel_name="shopinvader.backend")
+    shopinvader_backend_id = fields.Many2one(comodel_name="shopinvader.backend")
 
     def _params_from_fastapi_to_prepare_by_appending_id(self):
         return ["category", "team", "sale"]

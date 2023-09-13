@@ -9,6 +9,7 @@ from odoo.tests.common import tagged
 
 from odoo.addons.extendable_fastapi.tests.common import FastAPITransactionCase
 
+from odoo.addons.fastapi.context import odoo_env_ctx
 from ..routers import helpdesk_router
 
 
@@ -17,7 +18,48 @@ class TestShopinvaderApiHelpdeskTicketCommon(FastAPITransactionCase):
     @classmethod
     def setUpClass(cls) -> None:
         super().setUpClass()
+        cls.api_key_value = "ShopInvaderApiKey"
+        cls.api_key = cls.env["auth.api.key"].create(
+            {
+                "name": "shopinvader key",
+                "key": cls.api_key_value,
+                "user_id": cls.env.ref("douze_import_sale.douze_import").id,
+            }
+        )
+        cls.lang = cls.env["res.lang"].browse(1)
+        cls.backend = cls.env["shopinvader.backend"].create(
+            {
+                "name": "ShopInvader",
+                "lang_ids": [(4, cls.lang.id)],
+                "auth_api_key_id": cls.api_key.id,
+            }
+        )
+
+        cls.parent_partner = cls.env["res.partner"].create(
+            {
+                "name": "parenttestbackend",
+                "email": "parenttestbackend@example.com",
+                "shopinvader_bind_ids": [(0, 0, {"backend_id": cls.backend.id})],
+            }
+        )
+
         cls.default_fastapi_router = helpdesk_router
+        cls.fastapi_app = cls.env["fastapi.endpoint"].create(
+            {
+                "name": "Test shopinvader api helpdesk",
+                "app": "shopinvader_api_helpdesk",
+                "root_path": "/shopinvader",
+                "user_id": cls.env.ref("douze_import_sale.douze_import").id,
+                "shopinvader_backend_id": cls.backend.id,
+            }
+        )
+        cls.fastapi_app.shopinvader_backend_id = cls.backend
+        cls.default_fastapi_app = cls.fastapi_app._get_app()
+
+    @classmethod
+    def tearDownClass(cls) -> None:
+        cls.fastapi_app._reset_app()
+        super().tearDownClass()
 
     def generate_ticket_data(self, partner=None):
         data = {
