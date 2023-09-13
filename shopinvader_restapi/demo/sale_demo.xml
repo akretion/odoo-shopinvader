@@ -5,7 +5,7 @@
         <field name="partner_id" ref="anonymous" />
         <field name="partner_invoice_id" ref="anonymous" />
         <field name="partner_shipping_id" ref="anonymous" />
-        <field name="shopinvader_backend_id" ref="shopinvader_restapi.backend_1" />
+        <field name="shopinvader_backend_id" ref="shopinvader.backend_1" />
         <field name="user_id" ref="base.user_demo" />
         <field name="pricelist_id" ref="product.list0" />
         <field name="typology">cart</field>
@@ -43,7 +43,7 @@
         <field name="partner_id" ref="partner_1" />
         <field name="partner_invoice_id" ref="partner_1" />
         <field name="partner_shipping_id" ref="partner_1" />
-        <field name="shopinvader_backend_id" ref="shopinvader_restapi.backend_1" />
+        <field name="shopinvader_backend_id" ref="shopinvader.backend_1" />
         <field name="user_id" ref="base.user_root" />
         <field name="pricelist_id" ref="product.list0" />
         <field name="typology">cart</field>
@@ -72,7 +72,7 @@
         <field name="partner_id" ref="partner_2" />
         <field name="partner_invoice_id" ref="partner_2_address_1" />
         <field name="partner_shipping_id" ref="partner_2_address_1" />
-        <field name="shopinvader_backend_id" ref="shopinvader_restapi.backend_1" />
+        <field name="shopinvader_backend_id" ref="shopinvader.backend_1" />
         <field name="user_id" ref="base.user_root" />
         <field name="pricelist_id" ref="product.list0" />
         <field name="typology">cart</field>

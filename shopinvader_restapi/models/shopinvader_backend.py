@@ -18,18 +18,10 @@ class ShopinvaderBackend(models.Model):
     _name = "shopinvader.backend"
     _inherit = [
         "collection.base",
-        "server.env.techname.mixin",
-        "server.env.mixin",
+        "shopinvader.backend",
     ]
-    _description = "Shopinvader Backend"
 
-    name = fields.Char(required=True)
-    company_id = fields.Many2one(
-        "res.company",
-        "Company",
-        required=True,
-        default=lambda s: s._default_company_id(),
-    )
+   
     notification_ids = fields.One2many(
         "shopinvader.notification",
         "backend_id",
@@ -207,10 +199,6 @@ class ShopinvaderBackend(models.Model):
             _("This website unique key already exists in database"),
         )
     ]
-
-    @api.model
-    def _default_company_id(self):
-        return self.env.company
 
     @api.model
     def _default_pricelist_id(self):
