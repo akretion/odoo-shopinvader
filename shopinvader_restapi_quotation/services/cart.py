@@ -33,3 +33,9 @@ class CartService(Component):
         # Used in frontend
         res.update({"available_for_quotation": True})
         return res
+
+    def _get_product_information(self, line):
+        # TODO: Isn't shopinvader.ir_exp_shopinvader_variant supposed to export it?
+        res = super()._get_product_information(line)
+        res.update({"only_quotation": line.product_id.shop_only_quotation})
+        return res
