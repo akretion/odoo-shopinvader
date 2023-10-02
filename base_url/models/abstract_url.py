@@ -17,7 +17,10 @@ except ImportError:
 
 
 def get_model_ref(record):
-    return "{},{}".format(record._name, record.id)
+    record_id = record.id
+    if not isinstance(record_id, int) and hasattr(record_id, 'origin'):
+        record_id = record.id.origin
+    return "{},{}".format(record._name, record_id)
 
 
 class AbstractUrl(models.AbstractModel):
@@ -122,7 +125,7 @@ class AbstractUrl(models.AbstractModel):
                     new_url = record.manual_url_key
                 else:
                     new_url = record.automatic_url_key
-                if record.url_key != new_url:
+                if record.url_key != new_url and new_url:
                     record.url_key = new_url
                     record.set_url(record.url_key)
 
