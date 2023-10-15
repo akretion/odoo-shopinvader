@@ -16,8 +16,11 @@
         "bin": [],
     },
     "depends": [
+        # TODO FIXME
+        "shopinvader",
         "shopinvader_schema_sale",
-        "shopinvader_sale_state",
+        # "shopinvader_schema_sale",
+        # "shopinvader_sale_state",
     ],
     "data": [],
     "demo": [],

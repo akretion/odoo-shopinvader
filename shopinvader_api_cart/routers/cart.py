@@ -15,8 +15,7 @@ from odoo.addons.fastapi.dependencies import (
     authenticated_partner,
     authenticated_partner_env,
 )
-from odoo.addons.sale.models.sale_order import SaleOrder
-from odoo.addons.sale.models.sale_order_line import SaleOrderLine
+from odoo.addons.sale.models.sale import SaleOrder, SaleOrderLine
 from odoo.addons.shopinvader_schema_sale.schemas import Sale
 
 from ..schemas import CartSyncInput, CartTransaction, CartUpdateInput
@@ -224,17 +223,19 @@ class ShopinvaderApiCartRouterHelper(models.AbstractModel):
         if not transactions:
             return cart
         if not cart:
-            cart = self.env["sale.order"]._create_empty_cart(partner.id)
+            cart = self.env["sale.order"].sudo()._create_empty_cart(partner.id)
         if not uuid or cart.uuid == uuid:
             # only apply transaction to a cart if:
             # * no cart_uuid -> new cart
             # * cart_uuid = cart.uuid: Existing cart and transaction for this cart
-            self._apply_transactions(cart, transactions)
+
+            cart = cart.sudo()
+            self.sudo()._apply_transactions(cart, transactions)
         return cart
 
     def _update(self, partner, data, uuid):
         cart = self.env["sale.order"]._find_open_cart(partner.id, uuid)
         if not cart:
             cart = self.env["sale.order"]._create_empty_cart(partner.id)
-        cart.write(data.convert_to_sale_write(cart))
+        cart.sudo().write(data.convert_to_sale_write(cart))
         return cart
