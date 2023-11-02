@@ -7,9 +7,9 @@ from typing import List
 from odoo.addons.extendable_fastapi import StrictExtendableBaseModel
 
 from .amount import SaleAmount
+from .delivery import DeliveryInfo
 from .invoicing import InvoicingInfo
 from .sale_order_line import SaleOrderLine
-from .shipping import ShippingInfo
 
 
 class Sale(StrictExtendableBaseModel):
@@ -22,10 +22,8 @@ class Sale(StrictExtendableBaseModel):
     date_commitment: datetime | None = None
     lines: List[SaleOrderLine]
     amount: SaleAmount | None = None
-    # TODO discuss about this (should we keep the same schema for this field)
-    shipping: ShippingInfo | None = None
+    delivery: DeliveryInfo | None = None
     invoicing: InvoicingInfo | None = None
-    # TODO END
     typology: str
     note: str | None = None
 
@@ -44,7 +42,7 @@ class Sale(StrictExtendableBaseModel):
                 SaleOrderLine.from_sale_order_line(line) for line in odoo_rec.order_line
             ],
             amount=SaleAmount.from_sale_order(odoo_rec),
-            shipping=ShippingInfo.from_sale_order(odoo_rec),
+            delivery=DeliveryInfo.from_sale_order(odoo_rec),
             invoicing=InvoicingInfo.from_sale_order(odoo_rec),
             note=odoo_rec.note or None,
         )
