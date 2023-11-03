@@ -16,9 +16,8 @@ from odoo.addons.fastapi.dependencies import (
     authenticated_partner_env,
 )
 from odoo.addons.sale.models.sale import SaleOrder, SaleOrderLine
-from odoo.addons.shopinvader_schema_sale.schemas import Sale
 
-from ..schemas import CartSyncInput, CartTransaction, CartUpdateInput
+from ..schemas import CartResponse, CartSyncInput, CartTransaction, CartUpdateInput
 
 cart_router = APIRouter(tags=["carts"])
 
@@ -29,12 +28,12 @@ def get(
     env: Annotated[api.Environment, Depends(authenticated_partner_env)],
     partner: Annotated["ResPartner", Depends(authenticated_partner)],
     uuid: str | None = None,
-) -> Sale | None:
+) -> CartResponse | None:
     """
     Return an empty dict if no cart was found
     """
     cart = env["sale.order"]._find_open_cart(partner.id, uuid)
-    return Sale.from_sale_order(cart) if cart else None
+    return CartResponse.from_sale_order(cart) if cart else None
 
 
 @cart_router.post("/sync", status_code=201)
@@ -44,14 +43,14 @@ def sync(
     env: Annotated[api.Environment, Depends(authenticated_partner_env)],
     partner: Annotated["ResPartner", Depends(authenticated_partner)],
     uuid: str | None = None,
-) -> Sale | None:
+) -> CartResponse | None:
     if not uuid and data.uuid:
         uuid = data.uuid
     cart = env["sale.order"]._find_open_cart(partner.id, uuid)
     cart = env["shopinvader_api_cart.cart_router.helper"]._sync_cart(
         partner, cart, uuid, data.transactions
     )
-    return Sale.from_sale_order(cart) if cart else None
+    return CartResponse.from_sale_order(cart) if cart else None
 
 
 @cart_router.post("/update")
@@ -61,10 +60,10 @@ def update(
     env: Annotated[api.Environment, Depends(authenticated_partner_env)],
     partner: Annotated["ResPartner", Depends(authenticated_partner)],
     uuid: str | None = None,
-) -> Sale:
+) -> CartResponse:
     cart = env["shopinvader_api_cart.cart_router.helper"]._update(partner, data, uuid)
 
-    return Sale.from_sale_order(cart)
+    return CartResponse.from_sale_order(cart)
 
 
 class ShopinvaderApiCartRouterHelper(models.AbstractModel):

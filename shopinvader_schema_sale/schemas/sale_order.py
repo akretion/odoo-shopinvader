@@ -12,32 +12,26 @@ from .invoicing import InvoicingInfo
 from .sale_order_line import SaleOrderLine
 
 
-class Sale(StrictExtendableBaseModel):
-    uuid: str | None = None
+class BaseSale(StrictExtendableBaseModel):
     id: int
     state: str
     name: str
     client_order_ref: str | None = None
     date_order: datetime
-    date_commitment: datetime | None = None
     lines: List[SaleOrderLine]
     amount: SaleAmount | None = None
     delivery: DeliveryInfo | None = None
     invoicing: InvoicingInfo | None = None
-    typology: str
     note: str | None = None
 
     @classmethod
     def from_sale_order(cls, odoo_rec):
         return cls.model_construct(
-            uuid=odoo_rec.uuid or None,
             id=odoo_rec.id,
             state=odoo_rec.state,
             name=odoo_rec.name,
-            typology=odoo_rec.typology,
             client_order_ref=odoo_rec.client_order_ref or None,
             date_order=odoo_rec.date_order,
-            date_commitment=odoo_rec.commitment_date or None,
             lines=[
                 SaleOrderLine.from_sale_order_line(line) for line in odoo_rec.order_line
             ],
