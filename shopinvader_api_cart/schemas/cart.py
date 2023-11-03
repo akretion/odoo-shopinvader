@@ -14,6 +14,7 @@ class CartTransaction(StrictExtendableBaseModel):
 
 class CartSyncInput(StrictExtendableBaseModel):
     transactions: List[CartTransaction]
+    uuid: str | None = None
 
 
 class ShippingUpdateInfo(StrictExtendableBaseModel):

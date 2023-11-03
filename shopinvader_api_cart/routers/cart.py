@@ -44,6 +44,8 @@ def sync(
     partner: Annotated["ResPartner", Depends(authenticated_partner)],
     uuid: str | None = None,
 ) -> Sale | None:
+    if not uuid and data.uuid:
+        uuid = data.uuid
     cart = env["sale.order"]._find_open_cart(partner.id, uuid)
     cart = env["shopinvader_api_cart.cart_router.helper"]._sync_cart(
         partner, cart, uuid, data.transactions
