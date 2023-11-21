@@ -6,6 +6,7 @@ from extendable_pydantic import StrictExtendableBaseModel
 from odoo.tools.float_utils import json_float_round
 
 from .amount import SaleLineAmount
+from .sale_line_option import SaleLineOption
 
 
 class SaleLine(StrictExtendableBaseModel):
@@ -14,6 +15,7 @@ class SaleLine(StrictExtendableBaseModel):
     name: str
     amount: SaleLineAmount | None = None
     qty: float
+    options: SaleLineOption | None = None
 
     @classmethod
     def from_sale_order_line(cls, odoo_rec):
@@ -26,4 +28,5 @@ class SaleLine(StrictExtendableBaseModel):
                 odoo_rec.product_uom_qty,
                 precision_digits=len(str(odoo_rec.product_uom.rounding).split(".")[1]),
             ),
+            options=SaleLineOption.from_sale_order_line(odoo_rec),
         )
