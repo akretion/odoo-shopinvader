@@ -10,6 +10,7 @@ from fastapi.responses import FileResponse, StreamingResponse
 
 from odoo import api, fields, models
 from odoo.http import content_disposition
+from odoo.tools.safe_eval import safe_eval
 
 from odoo.addons.base.models.res_partner import Partner as ResPartner
 from odoo.addons.extendable_fastapi.schemas import PagedCollection
@@ -19,7 +20,7 @@ from odoo.addons.fastapi.dependencies import (
     paging,
 )
 from odoo.addons.fastapi.schemas import Paging
-from odoo.addons.sale.models.sale_order import SaleOrder
+from odoo.addons.sale.models.sale import SaleOrder
 from odoo.addons.shopinvader_filtered_model.utils import FilteredModelAdapter
 from odoo.addons.shopinvader_schema_sale.schemas import Sale, SaleSearch
 
@@ -114,4 +115,7 @@ class ShopinvaderApiSaleSalesRouterHelper(models.AbstractModel):
 
     def _get_pdf(self, record_id) -> tuple[str, bytes]:
         record = self._get(record_id)
-        return record.sudo()._generate_report("sale.action_report_saleorder")
+        report = self.env.ref("sale.action_report_saleorder").with_user(1)
+        filename = safe_eval(report.print_report_name, {"object": record})
+        content = report._render([record.id], {"report_type": report.report_type})[0]
+        return filename, content
