@@ -20,7 +20,7 @@ from odoo.addons.fastapi.dependencies import (
     paging,
 )
 from odoo.addons.fastapi.schemas import Paging
-from odoo.addons.sale.models.sale_order import SaleOrder
+from odoo.addons.sale.models.sale import SaleOrder
 from odoo.addons.shopinvader_filtered_model.utils import FilteredModelAdapter
 from odoo.addons.shopinvader_schema_sale.schemas import Sale, SaleSearch
 
@@ -117,13 +117,7 @@ class ShopinvaderApiSaleSalesRouterHelper(models.AbstractModel):
 
     def _get_pdf(self, record_id) -> tuple[str, bytes]:
         record = self._get(record_id)
-        report = self.env["ir.actions.report"]._get_report(
-            "sale.action_report_saleorder"
-        )
+        report = self.env.ref("sale.action_report_saleorder").with_user(1)
         filename = safe_eval(report.print_report_name, {"object": record})
-        content = (
-            self.env["ir.actions.report"]
-            .sudo()
-            ._render_qweb_pdf("sale.action_report_saleorder", [record.id])[0]
-        )
+        content = report._render([record.id], {"report_type": report.report_type})[0]
         return filename, content
