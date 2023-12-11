@@ -13,14 +13,15 @@ class Sale(sale.Sale, extends=True):
             if odoo_rec.delivery_state == "partially":
                 return "delivery_partial"
             elif odoo_rec.delivery_state == "done":
-                return "delivery_done"
+                return "delivery_full"
         # V16 shopinvader_api_quotation
-        if odoo_rec.typology == "quotation" and odoo_rec.state == "draft":
-            return "estimating"
-        elif odoo_rec.typology == "quotation" and odoo_rec.state == "sent":
-            return "estimated"
+        if "quotation_state" in odoo_rec._fields:
+            if odoo_rec.quotation_state == "customer_request":
+                return "estimating"
+            elif odoo_rec.quotation_state == "waiting_acceptation":
+                return "estimated"
         # V16 shopinvader_sale_state
-        elif odoo_rec.state == "cancel":
+        if odoo_rec.state == "cancel":
             return "cancel"
         elif odoo_rec.state == "done":
             return "delivery_full"
