@@ -75,8 +75,6 @@ def download(
         .new({"partner": partner})
         ._get_pdf(sale_id)
     )
-    if not filename.lower().endswith(".pdf"):
-        filename += ".pdf"
     header = {
         "Content-Disposition": content_disposition(filename),
     }
