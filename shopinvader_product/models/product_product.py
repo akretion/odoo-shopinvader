@@ -64,34 +64,48 @@ class ProductProduct(models.Model):
             [("product_tmpl_id", "in", product_ids)], order="product_tmpl_id"
         )
 
+    @api.model
+    def _get_main_product_read_fields(self):
+        product_model = self.env["product.product"]
+        order_by = [x.strip() for x in product_model._order.split(",")]
+        return ["product_tmpl_id"] + [f.split(" ")[0] for f in order_by]
+
+    @api.model
+    def _get_main_product_sorted_variants(self, variants):
+        order_by = [x.strip() for x in self.env["product.product"]._order.split(",")]
+
+        def get_value(record, key):
+            if record[key] is False and self._fields[key].type in ("char", "text"):
+                return ""
+            else:
+                return record[key]
+
+        for order_key in reversed(order_by):
+            order_key_split = order_key.split(" ")
+            reverse = len(order_key_split) > 1 and order_key_split[1] == "desc"
+            variants.sort(
+                key=lambda var: get_value(var, order_key_split[0]),
+                reverse=reverse,
+            )
+
+        return variants
+
+    @api.model
+    def _pick_main_variant(self, variants):
+        ordered = self._get_main_product_sorted_variants(variants)
+        return ordered[0].get("id") if ordered else None
+
     def _compute_main_product(self):
         # Respect same order.
-        order_by = [x.strip() for x in self.env["product.product"]._order.split(",")]
-        fields_to_read = ["product_tmpl_id"] + [f.split(" ")[0] for f in order_by]
+        fields_to_read = self._get_main_product_read_fields()
         product_ids = self.mapped("product_tmpl_id").ids
         _variants = self._get_shopinvader_product_variants(product_ids)
         # Use `load=False` to not load template name
         variants = _variants.read(fields_to_read, load=False)
         var_by_product = groupby(variants, lambda x: x["product_tmpl_id"])
 
-        def pick_1st_variant(variants):
-            def get_value(record, key):
-                if record[key] is False and self._fields[key].type in ("char", "text"):
-                    return ""
-                else:
-                    return record[key]
-
-            for order_key in reversed(order_by):
-                order_key_split = order_key.split(" ")
-                reverse = len(order_key_split) > 1 and order_key_split[1] == "desc"
-                variants.sort(
-                    key=lambda var: get_value(var, order_key_split[0]),
-                    reverse=reverse,
-                )
-            return variants[0].get("id") if variants else None
-
         main_by_product = {
-            product: pick_1st_variant(list(variants))
+            product: self._pick_main_variant(list(variants))
             for product, variants in var_by_product
         }
         for record in self:
