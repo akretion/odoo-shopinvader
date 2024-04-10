@@ -10,7 +10,7 @@ from odoo import api, models
 
 
 class PaymentTransactionSips(models.Model):
-    _inherit = "payment.transaction"
+    _inherit = "payment.acquirer"
 
     @api.model
     def _update_encoded_rendering_values(self, data, data_update):
@@ -30,7 +30,7 @@ class PaymentTransactionSips(models.Model):
         updated_data = "|".join([f"{k}={v}" for k, v in data_dict.items()])
         return updated_data
 
-    def _get_specific_rendering_values(self, processing_values):
+    def sips_form_generate_values(self, processing_values):
         """Override of payment to return Sips-specific rendering values.
         Update the Odoo url values, and then re-sign the response
 
@@ -43,9 +43,9 @@ class PaymentTransactionSips(models.Model):
         """
         shopinvader_api_payment = self.env.context.get("shopinvader_api_payment")
 
-        res = super()._get_specific_rendering_values(processing_values)
+        res = super().sips_form_generate_values(processing_values)
 
-        if self.provider_code != "sips" or not shopinvader_api_payment:
+        if self.provider != "sips" or not shopinvader_api_payment:
             return res
 
         shopinvader_api_payment_frontend_redirect_url = self.env.context.get(
@@ -62,11 +62,12 @@ class PaymentTransactionSips(models.Model):
             ),
             "returnContext": json.dumps(
                 dict(
-                    reference=self.reference,
+                    reference=processing_values["reference"],
                     frontend_redirect_url=shopinvader_api_payment_frontend_redirect_url,
                 )
             ),
         }
         res["Data"] = self._update_encoded_rendering_values(res["Data"], data_update)
-        res["Seal"] = self.provider_id._sips_generate_shasign(res["Data"])
+        del res["Seal"]
+        res["Seal"] = self._sips_generate_shasign(res)
         return res

@@ -10,10 +10,13 @@ from urllib.parse import urljoin
 from fastapi import APIRouter, Depends, HTTPException, Request
 
 from odoo import api, models
+from odoo.tools.misc import format_amount
 
 from odoo.addons.fastapi.dependencies import odoo_env
-from odoo.addons.payment.models.payment_provider import PaymentProvider
-from odoo.addons.payment.models.payment_transaction import PaymentTransaction
+from odoo.addons.payment.models.payment_acquirer import (
+    PaymentAcquirer as PaymentProvider,
+    PaymentTransaction,
+)
 
 from ..schemas import (
     PaymentDataWithMethods,
@@ -47,24 +50,23 @@ def pay(
         raise HTTPException(403) from e
     # This method is similar to Odoo's PaymentPortal.payment_pay
     providers_sudo = (
-        odoo_env["payment.provider"]
+        odoo_env["payment.acquirer"]
         .sudo()
-        ._get_compatible_providers(
-            payable_obj.company_id,
-            payable_obj.partner_id,
-            payable_obj.amount,
-            currency_id=payable_obj.currency_id,
+        ._get_available_payment_input(
+            company=odoo_env["res.company"].browse(payable_obj.company_id),
+            partner=odoo_env["res.partner"].browse(payable_obj.partner_id),
         )
-    )
+    )["acquirers"]
     return PaymentDataWithMethods(
         payable=payable,
         payable_reference=payable_obj.payable_reference,
         amount=payable_obj.amount,
         currency_code=odoo_env["res.currency"].browse(payable_obj.currency_id).name,
-        amount_formatted=odoo_env["sale.order"]
-        .sudo()
-        .browse(payable_obj.payable_id)
-        .currency_id.format(payable_obj.amount),
+        amount_formatted=format_amount(
+            odoo_env,
+            payable_obj.amount,
+            odoo_env["sale.order"].sudo().browse(payable_obj.payable_id).currency_id,
+        ),
         providers=[
             PaymentProviderSchema.from_payment_provider(provider)
             for provider in providers_sudo
@@ -94,15 +96,13 @@ def transaction(
     # similar to Odoo's /payment/transaction route
     if data.flow == "redirect":
         providers_sudo = (
-            odoo_env["payment.provider"]
+            odoo_env["payment.acquirer"]
             .sudo()
-            ._get_compatible_providers(
-                payable_obj.company_id,
-                payable_obj.partner_id,
-                payable_obj.amount,
-                currency_id=payable_obj.currency_id,
+            ._get_available_payment_input(
+                company=odoo_env["res.company"].browse(payable_obj.company_id),
+                partner=odoo_env["res.partner"].browse(payable_obj.partner_id),
             )
-        )
+        )["acquirers"]
         if not data.provider_id or data.provider_id not in providers_sudo.ids:
             _logger.info(
                 "Invalid provider %s for partner %s",
@@ -110,13 +110,13 @@ def transaction(
                 payable_obj.partner_id,
             )
             raise HTTPException(403)
-        provider_sudo = odoo_env["payment.provider"].sudo().browse(data.provider_id)
+        provider_sudo = odoo_env["payment.acquirer"].sudo().browse(data.provider_id)
 
         # Create the transaction
         tx_sudo = odoo_env[
             "shopinvader_api_payment.payment_router.helper"
         ]._create_transaction(data, provider_sudo, request, odoo_env)
-        tx_sudo._log_sent_message()
+        tx_sudo._log_payment_transaction_sent()
 
         transaction_processing_values = odoo_env[
             "shopinvader_api_payment.payment_router.helper"
@@ -164,8 +164,12 @@ class ShopinvaderApiPaymentRouterHelper(models.AbstractModel):
             odoo_env["payment.transaction"]
             .sudo()
             ._compute_reference(
-                provider_code=provider_sudo.code,
+                # provider_code=provider_sudo.provider, # Not in v14.0
                 prefix=payable_obj.payable_reference,
+                values={
+                    "acquirer_id": provider_sudo.id,
+                    "partner_id": payable_obj.partner_id,
+                },
                 # TODO are custom_create_values and kwargs really needed
                 # **(custom_create_values or {}),
                 # **kwargs
@@ -173,14 +177,15 @@ class ShopinvaderApiPaymentRouterHelper(models.AbstractModel):
         )
 
         return {
-            "provider_id": data.provider_id,
+            "acquirer_id": data.provider_id,
             "reference": tx_reference,
             "amount": payable_obj.amount,
             "currency_id": payable_obj.currency_id,
             "partner_id": payable_obj.partner_id,
             # 'token_id': token_id,
-            "operation": f"online_{data.flow}" if not is_validation else "validation",
-            "tokenize": False,
+            # "operation": f"online_{data.flow}" if not is_validation else "validation",
+            # "tokenize": False,
+            "type": "form" if not is_validation else "validation",
             **additional_transaction_create_values,
         }
 
@@ -214,6 +219,25 @@ class ShopinvaderApiPaymentRouterHelper(models.AbstractModel):
         """
         Extract the creation of the response to allow to extend it.
         """
+        # There's no _get_processing_values in v14.0, so we fill it manually
+        redirect_form_html = tx_sudo.acquirer_id.render(
+            reference=tx_sudo.reference,
+            amount=tx_sudo.amount,
+            currency_id=tx_sudo.currency_id.id,
+            partner_id=tx_sudo.partner_id.id,
+            values={
+                "partner_id": tx_sudo.partner_id.id,
+                "type": "form",
+            },
+        )
+
         return TransactionProcessingValues(
-            flow="redirect", **tx_sudo._get_processing_values()
+            flow="redirect",
+            provider_id=tx_sudo.acquirer_id.id,
+            provider_code=tx_sudo.acquirer_id.provider,
+            reference=tx_sudo.reference,
+            amount=tx_sudo.amount,
+            currency_id=tx_sudo.currency_id.id,
+            partner_id=tx_sudo.partner_id.id,
+            redirect_form_html=redirect_form_html,
         )

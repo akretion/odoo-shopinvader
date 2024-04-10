@@ -19,18 +19,24 @@ class PaymentProvider(BaseModel):
 
     @classmethod
     def _get_rendered_views(cls, odoo_rec, rendering_values=None):
-        express_form_view_id = odoo_rec.express_checkout_form_view_id
+        # No render view in v14.0
+        inline_form_view_id = None  # odoo_rec.inline_form_view_id
+        express_form_view_id = None  # odoo_rec.express_checkout_form_view_id
         return {
-            "inline_form_view_rendered": odoo_rec.inline_form_view_id._render_template(
-                odoo_rec.inline_form_view_id.id, rendering_values
-            )
-            if odoo_rec.inline_form_view_id
-            else None,
-            "express_checkout_form_view_rendered": express_form_view_id._render_template(
-                express_form_view_id.id, rendering_values
-            )
-            if express_form_view_id
-            else None,
+            "inline_form_view_rendered": (
+                inline_form_view_id._render_template(
+                    inline_form_view_id.id, rendering_values
+                )
+                if inline_form_view_id
+                else None
+            ),
+            "express_checkout_form_view_rendered": (
+                express_form_view_id._render_template(
+                    express_form_view_id.id, rendering_values
+                )
+                if express_form_view_id
+                else None
+            ),
         }
 
     @classmethod
@@ -44,7 +50,7 @@ class PaymentProvider(BaseModel):
         rendered_views = cls._get_rendered_views(odoo_rec, rendering_values)
         return cls.model_construct(
             id=odoo_rec.id,
-            code=odoo_rec.code,
+            code=odoo_rec.provider,
             name=odoo_rec.name,
             state=odoo_rec.state,
             inline_form_view_rendered=rendered_views.get("inline_form_view_rendered"),

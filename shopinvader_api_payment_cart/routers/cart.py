@@ -7,6 +7,7 @@ from uuid import UUID
 from fastapi import Depends, HTTPException
 
 from odoo import api
+from odoo.tools.misc import format_amount
 
 from odoo.addons.base.models.res_partner import Partner as ResPartner
 from odoo.addons.fastapi.dependencies import (
@@ -47,6 +48,8 @@ def init(
         "payable_reference": sale_order.name,
         "amount": sale_order.amount_total,
         "currency_code": sale_order.currency_id.name,
-        "amount_formatted": sale_order.currency_id.format(sale_order.amount_total),
+        "amount_formatted": format_amount(
+            env, sale_order.amount_total, sale_order.currency_id
+        ),
     }
     return PaymentData(**payment_data)

@@ -20,10 +20,10 @@ class SaleOrder(models.Model):
         the quotation.
         """
         if tx.state == "done" or (
-            tx.provider_id.code == "custom" and tx.state == "pending"
+            tx.acquirer_id.provider == "custom" and tx.state == "pending"
         ):
             res = self.action_confirm_cart()
-            if tx.provider_id.shopinvader_auto_confirm_linked_so:
+            if tx.acquirer_id.shopinvader_auto_confirm_linked_so:
                 self.action_confirm()
             return res
         return False

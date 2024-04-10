@@ -14,6 +14,6 @@ class PaymentIcon(StrictExtendableBaseModel):
     def from_payment_icon(cls, odoo_rec):
         return cls.model_construct(
             name=odoo_rec.name or None,
-            sequence=odoo_rec.sequence or None,
+            sequence=None,  # No sequence in 14.0
             image=odoo_rec.image or None,
         )

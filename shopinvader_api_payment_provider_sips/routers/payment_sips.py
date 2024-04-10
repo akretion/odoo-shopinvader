@@ -3,7 +3,6 @@
 # @author Stéphane Bidoul <stephane.bidoul@acsone.eu>
 # License LGPL-3.0 or later (https://www.gnu.org/licenses/agpl).
 
-import hmac
 import json
 import logging
 import pprint
@@ -27,7 +26,7 @@ _logger = logging.getLogger(__name__)
 
 
 @payment_router.post("/payment/providers/sips/return")
-async def sips_return(
+def sips_return(
     request: Request,
     odoo_env: Annotated[api.Environment, Depends(odoo_env)],
 ) -> RedirectResponse:
@@ -40,7 +39,8 @@ async def sips_return(
     Future: we could also return a unguessable transaction uuid that the front could the
     use to consult /payment/transactions/{uuid} and obtain the transaction status.
     """
-    data = await request.form()
+    # data = await request.form() # This is broken, data has already been parsed
+    data = request.scope["wsgi_environ"]["werkzeug.request"].values
     _logger.info(
         "return notification received from SIPS with data:\n%s", pprint.pformat(data)
     )
@@ -48,8 +48,7 @@ async def sips_return(
     tx_sudo = (
         odoo_env["payment.transaction"]
         .sudo()
-        ._get_tx_from_notification_data(
-            "sips",
+        ._sips_form_get_tx_from_data(
             data,
         )
     )
@@ -60,13 +59,12 @@ async def sips_return(
     except Exception:
         return {"error": "Invalid sips signature"}
 
-    notification_data = tx_sudo._sips_notification_data_to_object(data.get("Data"))
+    notification_data = tx_sudo._sips_data_to_object(data.get("Data"))
     returnContext = json.loads(notification_data.get("returnContext", "{}"))
     reference = returnContext.get("reference")
     frontend_redirect_url = returnContext.get("frontend_redirect_url")
 
     try:
-        tx_sudo._handle_notification_data("sips", data)
         status = tx_state_to_redirect_status(tx_sudo.state)
     except Exception:
         _logger.exception("unable to handle sips notification data", exc_info=True)
@@ -86,7 +84,8 @@ async def sips_webhook(
     odoo_env: Annotated[api.Environment, Depends(odoo_env)],
 ):
     """Handle SIPS webhook."""
-    data = await request.form()
+    # data = await request.form() # This is broken, data has already been parsed
+    data = request.scope["wsgi_environ"]["werkzeug.request"].values
     _logger.info(
         "webhook notification received from SIPS with data:\n%s", pprint.pformat(data)
     )
@@ -94,15 +93,13 @@ async def sips_webhook(
         tx_sudo = (
             odoo_env["payment.transaction"]
             .sudo()
-            ._get_tx_from_notification_data(
-                "sips",
+            ._sips_form_get_tx_from_data(
                 data,
             )
         )
         odoo_env[
             "shopinvader_api_payment_provider_sips.payment_sips_router.helper"
         ]._verify_sips_signature(tx_sudo, data)
-        tx_sudo._handle_notification_data("sips", data)
     except Exception:
         _logger.exception("unable to handle sips notification data", exc_info=True)
     return ""
@@ -114,12 +111,10 @@ class ShopinvaderApiPaymentProviderSipsRouterHelper(models.AbstractModel):
 
     def _verify_sips_signature(self, tx_sudo, data):
         """Verify the SIPS signature."""
-        expected_signature = tx_sudo.provider_id._sips_generate_shasign(
-            data.get("Data")
-        )
-        if not expected_signature:
-            _logger.warning("received sips notification without signature")
-            raise ValidationError()
-        if not hmac.compare_digest(data.get("Seal", ""), expected_signature):
-            _logger.warning("received sips notification with invalid signature")
-            raise ValidationError()
+        sips = self.env["payment.acquirer"].search([("provider", "=", "sips")], limit=1)
+        security = sips.sudo()._sips_generate_shasign(data)
+        if security == data["Seal"]:
+            if not self.env["payment.transaction"].sudo().form_feedback(data, "sips"):
+                raise ValidationError()
+        _logger.warning("received sips notification with invalid signature")
+        raise ValidationError()

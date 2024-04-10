@@ -8,7 +8,6 @@ from typing import Annotated
 from fastapi import Depends
 
 from odoo import api, models
-from odoo.fields import Command
 
 from odoo.addons.fastapi.dependencies import odoo_env
 from odoo.addons.shopinvader_api_payment.routers.utils import Payable
@@ -34,7 +33,7 @@ class ShopinvaderApiPaymentRouterHelper(models.AbstractModel):
             )
             additional_transaction_create_values.update(
                 {
-                    "sale_order_ids": [Command.set([payable_obj.payable_id])],
+                    "sale_order_ids": [(6, 0, [payable_obj.payable_id])],
                     "callback_method": "_action_confirm_cart_from_tx",
                     "callback_model_id": sale_order_model.id,
                     "callback_res_id": payable_obj.payable_id,
