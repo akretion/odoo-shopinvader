@@ -186,6 +186,7 @@ class ShopinvaderApiPaymentRouterHelper(models.AbstractModel):
             # "operation": f"online_{data.flow}" if not is_validation else "validation",
             # "tokenize": False,
             "type": "form" if not is_validation else "validation",
+            "shopinvader_frontend_redirect_url": data.frontend_redirect_url,
             **additional_transaction_create_values,
         }
 
