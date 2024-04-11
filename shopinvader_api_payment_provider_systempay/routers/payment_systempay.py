@@ -45,8 +45,7 @@ def systempay_return(
         )
     )
     odoo_env["payment.transaction"].sudo().form_feedback(data, "systempay")
-    frontend_redirect_url = data.get("return_url", "")
-    reference = data.get("reference", "")
+    reference = data.get("vads_ext_info_order_ref", "")
 
     try:
         status = tx_state_to_redirect_status(tx_sudo.state)
@@ -54,9 +53,13 @@ def systempay_return(
         _logger.exception("unable to handle systempay notification data", exc_info=True)
         status = "error"
 
+    # systempay module doesn't call execute_callback for some reason:
+    if status == "success":
+        tx_sudo.execute_callback()
+
     return RedirectResponse(
         url=add_query_params_in_url(
-            frontend_redirect_url,
+            tx_sudo.shopinvader_frontend_redirect_url,
             {"status": status, "reference": quote_plus(reference)},
         ),
         status_code=303,

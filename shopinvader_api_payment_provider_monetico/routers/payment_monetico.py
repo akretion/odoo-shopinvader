@@ -45,7 +45,6 @@ def monetico_return(
         )
     )
     odoo_env["payment.transaction"].sudo().form_feedback(data, "monetico")
-    frontend_redirect_url = data.get("return_url", "")
     reference = data.get("reference", "")
 
     try:
@@ -56,7 +55,7 @@ def monetico_return(
 
     return RedirectResponse(
         url=add_query_params_in_url(
-            frontend_redirect_url,
+            tx_sudo.shopinvader_frontend_redirect_url,
             {"status": status, "reference": quote_plus(reference)},
         ),
         status_code=303,

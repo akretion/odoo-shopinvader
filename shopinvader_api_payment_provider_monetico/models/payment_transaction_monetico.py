@@ -2,7 +2,6 @@
 # @author Florian Mounier <florian.mounier@akretion.com>
 # License AGPL-3.0 or later (http://www.gnu.org/licenses/agpl).
 
-import json
 from urllib.parse import urljoin
 
 from odoo import models
@@ -25,10 +24,5 @@ class PaymentTransactionMonetico(models.Model):
         values["url_return_ok"] = values["url_return_err"] = urljoin(
             shopinvader_api_payment_base_url, "monetico/return"
         )
-
-        # Where?
-        # shopinvader_api_payment_frontend_redirect_url = self.env.context.get(
-        #     "shopinvader_api_payment_frontend_redirect_url"
-        # )
 
         return values
