@@ -3,6 +3,7 @@
 # Copyright 2021 Camptocamp SA (http://www.camptocamp.com)
 # @author Simone Orsi <simahawk@gmail.com>
 # License AGPL-3.0 or later (http://www.gnu.org/licenses/agpl).
+from hashlib import sha1
 
 from odoo import fields, models
 
@@ -53,7 +54,9 @@ class ShopinvaderImageMixin(models.AbstractModel):
         self.ensure_one()
         if not self[self._image_field]:
             return False
-        return str(hash(self._get_images_store_hash_tuple()))
+        return sha1(
+            str(self._get_images_store_hash_tuple()).encode("utf-8")
+        ).hexdigest()
 
     def _get_images_store_hash_timestamp(self):
         """Get the timestamp of the last modification of the images
