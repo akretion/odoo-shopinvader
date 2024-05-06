@@ -54,6 +54,8 @@ class ShopinvaderImageMixin(models.AbstractModel):
         self.ensure_one()
         if not self[self._image_field]:
             return False
+        # NOTE : from python 3.9 on we should use
+        # usedforsecurity=False with sha1
         return sha1(
             str(self._get_images_store_hash_tuple()).encode("utf-8")
         ).hexdigest()
