@@ -113,6 +113,7 @@ def download(
 class ShopinvaderApiSaleSalesRouterHelper(models.AbstractModel):
     _name = "shopinvader_api_quotation.quotations_router.helper"
     _inherit = "shopinvader_api_sale.sales_router.helper"
+    _description = "Shopinvader api sale router helper"
 
     def _get_domain_adapter(self):
         return [
