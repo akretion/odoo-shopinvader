@@ -3,6 +3,8 @@
 # Copyright 2023 Acsone SA/NV
 # License AGPL-3.0 or later (http://www.gnu.org/licenses/agpl.html).
 
+from odoo.tests import tagged
+
 from odoo.addons.extendable.tests.common import ExtendableMixin
 from odoo.addons.stock_packaging_calculator.tests.common import TestCommon
 
@@ -10,6 +12,7 @@ from ..schemas import ProductPackaging, ProductProduct, SimpleProductPackaging
 from .common import CommonPackagingCase
 
 
+@tagged("post_install", "-at_install")
 class TestProductPackagingData(ExtendableMixin, CommonPackagingCase, TestCommon):
 
     maxDiff = None
@@ -48,6 +51,7 @@ class TestProductPackagingData(ExtendableMixin, CommonPackagingCase, TestCommon)
                         can_be_sold=self.pkg_big_box.can_be_sold,
                     )
                 ],
+                sales=self.pkg_pallet.sales,
             ),
             ProductPackaging(
                 id=self.pkg_big_box.id,
@@ -68,6 +72,7 @@ class TestProductPackagingData(ExtendableMixin, CommonPackagingCase, TestCommon)
                         can_be_sold=self.pkg_box.can_be_sold,
                     )
                 ],
+                sales=self.pkg_big_box.sales,
             ),
             ProductPackaging(
                 id=self.pkg_box.id,
@@ -86,6 +91,7 @@ class TestProductPackagingData(ExtendableMixin, CommonPackagingCase, TestCommon)
                         can_be_sold=not self.product_a.sell_only_by_packaging,
                     )
                 ],
+                sales=self.pkg_box.sales,
             ),
             ProductPackaging(
                 id=self.product_a.uom_id.id,
@@ -95,6 +101,7 @@ class TestProductPackagingData(ExtendableMixin, CommonPackagingCase, TestCommon)
                 is_unit=True,
                 can_be_sold=not self.product_a.sell_only_by_packaging,
                 contained=[],
+                sales=False,
             ),
         ]
 

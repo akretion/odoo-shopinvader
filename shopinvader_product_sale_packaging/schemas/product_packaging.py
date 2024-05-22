@@ -36,6 +36,7 @@ class SimpleProductPackaging(StrictExtendableBaseModel):
 
 class ProductPackaging(SimpleProductPackaging):
     contained: list[SimpleProductPackaging] = []
+    sales: bool
 
     @classmethod
     def from_packaging(cls, odoo_product, packaging, packaging_contained_mapping=None):
@@ -56,4 +57,6 @@ class ProductPackaging(SimpleProductPackaging):
                     )
                     for pkg in contained_packaging
                 ]
+        pkg = odoo_product.packaging_ids.filtered(lambda p: p.id == packaging.id)
+        obj.sales = pkg.sales
         return obj
