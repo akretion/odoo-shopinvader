@@ -2,6 +2,7 @@
 # License AGPL-3.0 or later (http://www.gnu.org/licenses/agpl.html).
 
 from odoo import models
+from odoo.osv import expression
 
 
 class PricelistItem(models.Model):
@@ -9,10 +10,12 @@ class PricelistItem(models.Model):
     _inherit = ["product.pricelist.item", "se.product.update.mixin"]
 
     def get_products(self):
-        Product = self.env["product.product"]
-        return Product.search(self._se_get_product_domain())
+        domains = [rec._se_get_product_domain() for rec in self]
+        Products = self.env["product.product"]
+        return Products.search(expression.OR(domains))
 
     def _se_get_product_domain(self):
+        self.ensure_one()
         domain = []
         # TODO: confirm all-product case
         if self.applied_on == "3_global":
