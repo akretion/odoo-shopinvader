@@ -28,6 +28,11 @@ addon | version | maintainers | summary
 [shopinvader_api_address](shopinvader_api_address/) | 16.0.1.3.0 |  | Adds a service to manage shopinvader invoicing and delivery address
 [shopinvader_api_cart](shopinvader_api_cart/) | 16.0.1.3.4 |  | Cart FastAPI designed to work with the shopinvader-js-cart library see (https://github.com/shopinvader/shopinvader-js-cart)
 [shopinvader_api_cart_step](shopinvader_api_cart_step/) | 16.0.1.0.0 |  | Track checkout steps on sale cart.
+[shopinvader_api_payment](shopinvader_api_payment/) | 16.0.1.0.0 |  | Shopinvader services to be able to pay (invoices, carts,...)
+[shopinvader_api_payment_cart](shopinvader_api_payment_cart/) | 16.0.1.0.0 |  | Adds logic to be able to pay current cart
+[shopinvader_api_payment_provider_custom](shopinvader_api_payment_provider_custom/) | 16.0.1.0.0 |  | Specific routes for custom payments (wire transfers...) from Shopinvader
+[shopinvader_api_payment_provider_sips](shopinvader_api_payment_provider_sips/) | 16.0.1.0.0 |  | Specific routes for SIPS payments from Shopinvader
+[shopinvader_api_payment_provider_stripe](shopinvader_api_payment_provider_stripe/) | 16.0.1.0.0 |  | Specific routes for Stripe payments from Shopinvader
 [shopinvader_api_sale](shopinvader_api_sale/) | 16.0.1.1.3 |  | Sale FastApi for exposing sale order
 [shopinvader_api_sale_loyalty](shopinvader_api_sale_loyalty/) | 16.0.1.0.1 |  | FastAPI services to add coupons and loyalties to carts.
 [shopinvader_api_security_sale](shopinvader_api_security_sale/) | 16.0.1.1.1 |  | Add security rule to expose sale order
