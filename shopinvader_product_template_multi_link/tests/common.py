@@ -79,6 +79,7 @@ class ProductLinkCaseBase(ProductCommonCase):
                 "left_product_tmpl_id": cls.template_1.id,
                 "right_product_tmpl_id": cls.template_3.id,
                 "type_id": cls.cross_selling_type.id,
+                "sequence": 10,
             }
         )
         cls.link_crosselling_2_3 = cls.env["product.template.link"].create(
@@ -89,6 +90,7 @@ class ProductLinkCaseBase(ProductCommonCase):
                     "product_template_multi_link."
                     "product_template_link_type_cross_selling"
                 ).id,
+                "sequence": 20,
             }
         )
         cls.link_one_way_3_2 = cls.env["product.template.link"].create(

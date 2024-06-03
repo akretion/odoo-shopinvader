@@ -59,3 +59,25 @@ class ProductLinkCase(ProductLinkCaseBase):
         exporter = self.env.ref("shopinvader.ir_exp_shopinvader_variant")
         parser = exporter.get_json_parser()
         self.assertIn("links", self.shopinvader_variant_2_2.jsonify(parser, one=True))
+
+    def test_link_sequence(self):
+        self.link_crosselling_1_3.sequence = 15
+        self.link_crosselling_2_3.sequence = 5
+        main1 = self.template_1.mapped(
+            "shopinvader_bind_ids.shopinvader_variant_ids"
+        ).filtered(lambda x: x.main)
+        main2 = self.template_2.mapped(
+            "shopinvader_bind_ids.shopinvader_variant_ids"
+        ).filtered(lambda x: x.main)
+
+        expected = {
+            "cross_selling": [
+                {"id": main2.record_id.id},
+                {"id": main1.record_id.id},
+            ],
+        }
+        expected["one_way"] = [{"id": main2.record_id.id}]
+        self.assertEqual(
+            self.shopinvader_variant_3_2.shopinvader_product_id.product_links,
+            expected,
+        )

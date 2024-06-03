@@ -40,7 +40,7 @@ class ShopinvaderProductLinkMixin(models.AbstractModel):
         """
         self.ensure_one()
         grouped = defaultdict(self.env["product.template.link"].browse)
-        for link in links.sorted(lambda x: x.id):
+        for link in links.sorted(lambda x: x.sequence):
             code = self._product_link_code(link)
             grouped[code] |= link
         res = defaultdict(list)
