@@ -1,4 +1,5 @@
 from typing import Annotated
+from uuid import UUID
 
 from fastapi import Depends
 
@@ -17,7 +18,7 @@ from odoo.addons.shopinvader_schema_sale.schemas.sale import Sale
 def request_quotation(
     env: Annotated[api.Environment, Depends(authenticated_partner_env)],
     partner: Annotated["ResPartner", Depends(authenticated_partner)],
-    uuid: str | None = None,
+    uuid: UUID | None = None,
 ) -> Sale:
     sale = env["shopinvader_api_cart.cart_router.helper"]._request_quotation(
         partner, uuid

@@ -14,13 +14,10 @@ class Sale(Sale, extends=True):
         res.available_for_quotation = True
         res.shop_only_quotation = odoo_rec.shop_only_quotation
         res.customer_ref = odoo_rec.client_order_ref or None
-        # res.shop_only_quotation = any(
-        #     odoo_rec.order_line.product_id.mapped("shop_only_quotation")
-        # ) mettre un champs calculé coté odoo sur model sale_order
         return res
 
 
-class QuotationUpdateInput(StrictExtendableBaseModel):
+class QuotationUpdateInput(StrictExtendableBaseModel, extra="ignore"):
     customer_ref: str | None = None
 
     def to_sale_order_vals(self) -> dict:
