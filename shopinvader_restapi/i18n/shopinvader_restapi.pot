@@ -49,6 +49,11 @@ msgid " Your profile has been modified"
 msgstr ""
 
 #. module: shopinvader_restapi
+#: model:ir.model.fields,field_description:shopinvader_restapi.field_shopinvader_partner__meeting_count
+msgid "# Meetings"
+msgstr ""
+
+#. module: shopinvader_restapi
 #: model:ir.model.fields,field_description:shopinvader_restapi.field_shopinvader_partner__wishlists_count
 msgid "# Wishlists"
 msgstr ""
@@ -998,6 +1003,11 @@ msgid "Last Updated on"
 msgstr ""
 
 #. module: shopinvader_restapi
+#: model:ir.model.fields,field_description:shopinvader_restapi.field_shopinvader_partner__calendar_last_notif_ack
+msgid "Last notification marked as read from base Calendar"
+msgstr ""
+
+#. module: shopinvader_restapi
 #: model:ir.model.fields,field_description:shopinvader_restapi.field_shopinvader_partner__sync_date
 msgid "Last synchronization date"
 msgstr ""
@@ -1043,6 +1053,11 @@ msgstr ""
 #. module: shopinvader_restapi
 #: model:res.groups,name:shopinvader_restapi.group_shopinvader_manager
 msgid "Manager"
+msgstr ""
+
+#. module: shopinvader_restapi
+#: model:ir.model.fields,field_description:shopinvader_restapi.field_shopinvader_partner__meeting_ids
+msgid "Meetings"
 msgstr ""
 
 #. module: shopinvader_restapi
@@ -1119,6 +1134,11 @@ msgstr ""
 #: code:addons/shopinvader_restapi/models/shopinvader_notification.py:0
 #, python-format
 msgid "New customer Welcome"
+msgstr ""
+
+#. module: shopinvader_restapi
+#: model:ir.model.fields,field_description:shopinvader_restapi.field_shopinvader_partner__activity_calendar_event_id
+msgid "Next Activity Calendar Event"
 msgstr ""
 
 #. module: shopinvader_restapi
@@ -1240,6 +1260,16 @@ msgstr ""
 #. module: shopinvader_restapi
 #: model:ir.model.fields,field_description:shopinvader_restapi.field_shopinvader_backend__invoice_access_open
 msgid "Open invoices"
+msgstr ""
+
+#. module: shopinvader_restapi
+#: model:ir.model.fields,field_description:shopinvader_restapi.field_shopinvader_partner__opportunity_ids
+msgid "Opportunities"
+msgstr ""
+
+#. module: shopinvader_restapi
+#: model:ir.model.fields,field_description:shopinvader_restapi.field_shopinvader_partner__opportunity_count
+msgid "Opportunity"
 msgstr ""
 
 #. module: shopinvader_restapi
