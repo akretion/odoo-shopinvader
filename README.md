@@ -48,7 +48,7 @@ addon | version | maintainers | summary
 [shopinvader_product_sale_packaging](shopinvader_product_sale_packaging/) | 16.0.1.0.1 |  | Shopinvader Product Sale Packaging
 [shopinvader_product_seo](shopinvader_product_seo/) | 16.0.1.0.0 |  | SEO fields for Shopinvader
 [shopinvader_product_url](shopinvader_product_url/) | 16.0.1.0.1 |  | Generate url for product and category
-[shopinvader_restapi](shopinvader_restapi/) | 16.0.1.1.2 |  | Shopinvader
+[shopinvader_restapi](shopinvader_restapi/) | 16.0.1.1.3 |  | Shopinvader
 [shopinvader_restapi_auth_jwt](shopinvader_restapi_auth_jwt/) | 16.0.1.2.0 |  | Find shopinvader backend and partner from JWT token
 [shopinvader_restapi_invoice](shopinvader_restapi_invoice/) | 16.0.1.0.0 |  | Shopinvader Restapi Invoice module
 [shopinvader_restapi_sale_packaging](shopinvader_restapi_sale_packaging/) | 16.0.1.1.0 |  | Shopinvader Restapi Sale Packaging
