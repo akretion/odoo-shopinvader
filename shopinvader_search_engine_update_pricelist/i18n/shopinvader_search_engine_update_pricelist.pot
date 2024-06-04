@@ -1,6 +1,6 @@
 # Translation of Odoo Server.
 # This file contains the translation of the following modules:
-# 	* shopinvader_api_payment_provider_stripe
+# 	* shopinvader_search_engine_update_pricelist
 #
 msgid ""
 msgstr ""
@@ -13,7 +13,7 @@ msgstr ""
 "Content-Transfer-Encoding: \n"
 "Plural-Forms: \n"
 
-#. module: shopinvader_api_payment_provider_stripe
-#: model:ir.model,name:shopinvader_api_payment_provider_stripe.model_payment_transaction
-msgid "Payment Transaction"
+#. module: shopinvader_search_engine_update_pricelist
+#: model:ir.model,name:shopinvader_search_engine_update_pricelist.model_product_pricelist_item
+msgid "Pricelist Rule"
 msgstr ""
