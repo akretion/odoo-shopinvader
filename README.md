@@ -69,6 +69,7 @@ addon | version | maintainers | summary
 [shopinvader_search_engine_product_template_multi_link](shopinvader_search_engine_product_template_multi_link/) | 16.0.1.0.0 |  | Shopinvader Product Link
 [shopinvader_search_engine_update](shopinvader_search_engine_update/) | 16.0.1.0.2 |  | Shopinvader: Mark product binding to export on product update
 [shopinvader_search_engine_update_image](shopinvader_search_engine_update_image/) | 16.0.1.0.0 |  | Shopinvader: Mark products linked to an image to be updated when the image change
+[shopinvader_search_engine_update_pricelist](shopinvader_search_engine_update_pricelist/) | 16.0.1.0.0 |  | Shopinvader: Mark product binding to export on Product Pricelist update
 [shopinvader_search_engine_update_product_brand](shopinvader_search_engine_update_product_brand/) | 16.0.1.0.0 |  | Shopinvader: Mark brand and product bindings to export on product brand update
 [shopinvader_search_engine_update_product_brand_image](shopinvader_search_engine_update_product_brand_image/) | 16.0.1.0.0 |  | Mark brand and product bindings to export on product image brand update
 [shopinvader_search_engine_update_product_brand_tag](shopinvader_search_engine_update_product_brand_tag/) | 16.0.1.0.0 |  | Mark brand and product bindings to export on product image tag update
