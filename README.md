@@ -55,7 +55,7 @@ addon | version | maintainers | summary
 [shopinvader_sale_cart](shopinvader_sale_cart/) | 16.0.1.0.2 |  | ShopInvader logic for sale carts.
 [shopinvader_sale_state](shopinvader_sale_state/) | 16.0.1.0.1 |  | Basic module to implement state for sale order
 [shopinvader_schema_address](shopinvader_schema_address/) | 16.0.1.3.0 |  | Adds shchema address: address invoicing_address delivery_address
-[shopinvader_schema_sale](shopinvader_schema_sale/) | 16.0.1.1.2 |  | Add schema sale
+[shopinvader_schema_sale](shopinvader_schema_sale/) | 16.0.1.1.3 |  | Add schema sale
 [shopinvader_schema_sale_state](shopinvader_schema_sale_state/) | 16.0.1.0.1 |  | Shopinvader Schema Sale State
 [shopinvader_search_engine](shopinvader_search_engine/) | 16.0.1.0.6 |  | Shopinvader Catalog Search Engine Connector
 [shopinvader_search_engine_assortment](shopinvader_search_engine_assortment/) | 16.0.1.0.1 |  | Shopinvader Search Engine Assortment
