@@ -50,6 +50,7 @@ setuptools.setup(
         'odoo-addon-shopinvader_search_engine_product_brand>=16.0dev,<16.1dev',
         'odoo-addon-shopinvader_search_engine_product_brand_image>=16.0dev,<16.1dev',
         'odoo-addon-shopinvader_search_engine_product_media>=16.0dev,<16.1dev',
+        'odoo-addon-shopinvader_search_engine_product_price>=16.0dev,<16.1dev',
         'odoo-addon-shopinvader_search_engine_product_seo>=16.0dev,<16.1dev',
         'odoo-addon-shopinvader_search_engine_product_stock>=16.0dev,<16.1dev',
         'odoo-addon-shopinvader_search_engine_product_stock_state>=16.0dev,<16.1dev',
