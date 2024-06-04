@@ -26,6 +26,12 @@ class CartCase(CommonCase):
         templates.write(
             {"taxes_id": [(6, 0, [self.env.ref("shopinvader_restapi.tax_1").id])]}
         )
+        self.env["account.fiscal.position"].search(
+            [
+                ("auto_apply", "=", True),
+                ("id", "not in", [self.fposition.id, self.default_fposition.id]),
+            ]
+        ).auto_apply = False
 
     def _create_notification_config(self):
         template = self.env.ref("account.email_template_edi_invoice")
