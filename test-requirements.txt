@@ -1,7 +1,4 @@
 openupgradelib
-# TODO these should be on PyPI
-locomotivecms @ git+https://github.com/akretion/locomotivecms-python-client.git
-# test requirements
 requests_mock
 vcrpy
 vcrpy-unittest
