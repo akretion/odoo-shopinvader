@@ -22,3 +22,9 @@ class TestShopinvaderSettingsApi(TestShopinvaderSettingsApiCommon):
         self.assertTrue(countries[0].get("id"))
         self.assertTrue(countries[0].get("code"))
         self.assertTrue(countries[0].get("name"))
+
+        langs = settings.get("langs")
+        self.assertTrue(langs)
+        self.assertTrue(langs[0].get("id"))
+        self.assertTrue(langs[0].get("code"))
+        self.assertTrue(langs[0].get("name"))

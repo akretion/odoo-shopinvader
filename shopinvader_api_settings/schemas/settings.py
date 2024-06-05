@@ -4,9 +4,11 @@
 from extendable_pydantic import StrictExtendableBaseModel
 
 from .country import Country
+from .lang import Lang
 from .partner_title import PartnerTitle
 
 
 class Settings(StrictExtendableBaseModel):
     countries: list[Country] = []
     partner_titles: list[PartnerTitle] = []
+    langs: list[Lang] = []

@@ -12,6 +12,7 @@ from odoo.addons.fastapi.models import FastapiEndpoint
 
 from ..schemas import Settings
 from ..schemas.country import Country
+from ..schemas.lang import Lang
 from ..schemas.partner_title import PartnerTitle
 
 settings_router = APIRouter(tags=["settings"])
@@ -46,6 +47,7 @@ class ShopinvaderApiSettingsRouterHelper(models.AbstractModel):
         settings = Settings.model_construct(
             countries=self._get_countries(),
             partner_titles=self._get_partner_titles(),
+            langs=self._get_langs(),
         )
         return settings
 
@@ -70,3 +72,9 @@ class ShopinvaderApiSettingsRouterHelper(models.AbstractModel):
 
     def _get_partner_title_domain(self) -> list:
         return []
+
+    def _get_langs(self) -> list[Lang]:
+        return [
+            Lang.from_res_lang(lang)
+            for lang in self.env["res.lang"].with_context(active_test=True).search([])
+        ]

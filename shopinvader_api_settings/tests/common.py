@@ -24,6 +24,10 @@ class TestShopinvaderSettingsApiCommon(FastAPITransactionCase):
                 "login": "test_user",
             }
         )
+        cls.lang_en = cls.env.ref("base.lang_en")
+        cls.lang_en.active = True
+        cls.lang_fr = cls.env.ref("base.lang_fr")
+        cls.lang_fr.active = True
 
         cls.partner_title = cls.PartnerTitle.create({"name": "test partner title"})
         cls.default_fastapi_running_user = cls.user
