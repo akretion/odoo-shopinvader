@@ -1,7 +1,5 @@
-This module adds a REST API for shopinvader to manage quotations.
+This module adds a REST API for shopinvader to manage quotations (see module: sale_quotation)
 
-The Customer can convert a cart into a quotation (the typology of the sale
-order is set to quotation).
 
 Initially, the quotation has the `shopinvader_state` "estimating".
 After updating the price manually when the button "sent" on Odoo backend
