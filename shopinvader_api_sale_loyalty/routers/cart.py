@@ -3,7 +3,7 @@
 from typing import Annotated
 from uuid import UUID
 
-from fastapi import Depends
+from fastapi import APIRouter, Depends
 
 from odoo import _, api, models
 from odoo.exceptions import UserError
@@ -14,17 +14,18 @@ from odoo.addons.fastapi.dependencies import (
     authenticated_partner_env,
 )
 from odoo.addons.sale.models.sale_order import SaleOrder
-from odoo.addons.shopinvader_api_cart.routers import cart_router
 from odoo.addons.shopinvader_api_cart.schemas import CartTransaction
 
 from ..schemas import LoyaltyCardInput, LoyaltyRewardInput, Sale
 
+sale_loyalty_cart_router = APIRouter(tags=["carts"])
 
-@cart_router.post("/apply_coupon/{uuid}", deprecated=True)
-@cart_router.post("/apply_coupon", deprecated=True)
-@cart_router.post("/{uuid}/coupon")
-@cart_router.post("/current/coupon")
-@cart_router.post("/coupon")
+
+@sale_loyalty_cart_router.post("/apply_coupon/{uuid}", deprecated=True)
+@sale_loyalty_cart_router.post("/apply_coupon", deprecated=True)
+@sale_loyalty_cart_router.post("/{uuid}/coupon")
+@sale_loyalty_cart_router.post("/current/coupon")
+@sale_loyalty_cart_router.post("/coupon")
 def apply_coupon(
     data: LoyaltyCardInput,
     env: Annotated[api.Environment, Depends(authenticated_partner_env)],
@@ -45,11 +46,11 @@ def apply_coupon(
     return Sale.from_sale_order(cart) if cart else None
 
 
-@cart_router.post("/apply_reward/{uuid}", deprecated=True)
-@cart_router.post("/apply_reward", deprecated=True)
-@cart_router.post("/{uuid}/reward")
-@cart_router.post("/current/reward")
-@cart_router.post("/reward")
+@sale_loyalty_cart_router.post("/apply_reward/{uuid}", deprecated=True)
+@sale_loyalty_cart_router.post("/apply_reward", deprecated=True)
+@sale_loyalty_cart_router.post("/{uuid}/reward")
+@sale_loyalty_cart_router.post("/current/reward")
+@sale_loyalty_cart_router.post("/reward")
 def apply_reward(
     data: LoyaltyRewardInput,
     env: Annotated[api.Environment, Depends(authenticated_partner_env)],
