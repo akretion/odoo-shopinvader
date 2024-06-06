@@ -10,8 +10,7 @@
     "author": "ACSONE SA/NV",
     "website": "https://github.com/shopinvader/odoo-shopinvader",
     "depends": [
-        "sale_loyalty",
-        "sale_loyalty_order_info",
+        "sale_coupon",
         "shopinvader_api_cart",
         "shopinvader_api_security_sale",
         "shopinvader_schema_sale",
@@ -22,14 +21,12 @@
     ],
     "data": [
         "security/groups.xml",
-        "security/acl_loyalty_card.xml",
-        "security/acl_loyalty_program.xml",
-        "security/acl_loyalty_reward.xml",
-        "security/acl_loyalty_rule.xml",
+        "security/acl_coupon_coupon.xml",
+        "security/acl_coupon_program.xml",
+        "security/acl_coupon_reward.xml",
+        "security/acl_coupon_rule.xml",
         "security/acl_product_product.xml",
-        "security/acl_product_tag.xml",
-        "security/acl_sale_order_coupon_points.xml",
-        "security/acl_sale_loyalty_reward_wizard.xml",
+        "security/acl_sale_coupon_apply_code.xml",
     ],
     "external_dependencies": {
         "python": [
