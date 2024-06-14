@@ -19,7 +19,6 @@
         # TODO FIXME
         "shopinvader",
         "shopinvader_schema_sale",
-        # "shopinvader_schema_sale",
         # "shopinvader_sale_state",
     ],
     "data": [],
