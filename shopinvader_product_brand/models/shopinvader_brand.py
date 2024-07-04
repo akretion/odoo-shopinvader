@@ -2,7 +2,7 @@
 # @author Sébastien BEAU <sebastien.beau@akretion.com>
 # License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl).
 
-from odoo import fields, models
+from odoo import api, fields, models
 
 
 class ShopinvaderBrand(models.Model):
@@ -36,5 +36,6 @@ class ShopinvaderBrand(models.Model):
         )
     ]
 
+    @api.depends("record_id.name", "lang_id")
     def _compute_automatic_url_key(self):
         self._generic_compute_automatic_url_key()
