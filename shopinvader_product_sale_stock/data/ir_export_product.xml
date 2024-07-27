@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<odoo>
+
+    <record id="ir_exp_shopinvader_variant_sale_ok" model="ir.exports.line">
+        <field name="name">sale_ok</field>
+        <field name="target">sale_ok:sale_ok</field>
+        <field name="export_id" ref="shopinvader.ir_exp_shopinvader_variant" />
+    </record>
+
+    <record id="ir_exp_shopinvader_variant_sale_delay" model="ir.exports.line">
+        <field name="name">sale_delay</field>
+        <field name="target">sale_delay:sale_delay</field>
+        <field name="export_id" ref="shopinvader.ir_exp_shopinvader_variant" />
+    </record>
+
+</odoo>
