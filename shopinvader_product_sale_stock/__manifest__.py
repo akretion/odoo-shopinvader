@@ -12,8 +12,8 @@
     "installable": True,
     "depends": ["shopinvader_product_stock_state"],
     "data": [
-#        "views/shopinvader_backend.xml",
-#        "views/shopinvader_product.xml",
+        "views/shopinvader_backend.xml",
+        "views/shopinvader_product.xml",
         "data/ir_export_product.xml",
     ],
 

@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!--
+    License AGPL-3.0 or later (http://www.gnu.org/licenses/agpl).
+-->
+<odoo>
+
+    <record model="ir.ui.view" id="shopinvader_product_form_view">
+        <field name="model">shopinvader.product</field>
+        <field name="inherit_id" ref="shopinvader.shopinvader_product_form_view" />
+        <field name="arch" type="xml">
+            <page name="description_and_seo" position="after">
+                <page name="stock" string="Stock">
+                    <group>
+                        <field name="sale_ok_policy" />
+                        <field name="in_stock_delay" />
+                        <field name="out_of_stock_delay" />
+                    </group>
+                </page>
+            </page>
+        </field>
+    </record>
+
+</odoo>
