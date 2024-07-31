@@ -65,13 +65,12 @@ def monetico_return(
 @payment_router.post(
     "/payment/providers/monetico/webhook", response_class=PlainTextResponse
 )
-def monetico_webhook(
+async def monetico_webhook(
     request: Request,
     odoo_env: Annotated[api.Environment, Depends(odoo_env)],
 ) -> str:
     """Handle Monetico webhook."""
-    # data = await request.form() # This is broken, data has already been parsed
-    data = request.scope["wsgi_environ"]["werkzeug.request"].values
+    data = await request.form()
     _logger.info(
         "webhook notification received from Monetico with data:\n%s",
         pprint.pformat(data),
