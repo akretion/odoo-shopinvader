@@ -9,7 +9,7 @@ from typing import Annotated
 from urllib.parse import quote_plus
 
 from fastapi import Depends, Request
-from fastapi.responses import RedirectResponse
+from fastapi.responses import PlainTextResponse, RedirectResponse
 
 from odoo import api
 
@@ -62,11 +62,13 @@ def monetico_return(
     )
 
 
-@payment_router.post("/payment/providers/monetico/webhook")
+@payment_router.post(
+    "/payment/providers/monetico/webhook", response_class=PlainTextResponse
+)
 def monetico_webhook(
     request: Request,
     odoo_env: Annotated[api.Environment, Depends(odoo_env)],
-):
+) -> str:
     """Handle Monetico webhook."""
     # data = await request.form() # This is broken, data has already been parsed
     data = request.scope["wsgi_environ"]["werkzeug.request"].values
@@ -76,7 +78,7 @@ def monetico_webhook(
     )
     try:
         odoo_env["payment.transaction"].sudo().form_feedback(data, "monetico")
-
+        return "version=2\ncdr=0\n"
     except Exception:
         _logger.exception("unable to handle monetico notification data", exc_info=True)
-    return ""
+        return "version=2\ncdr=1\n"

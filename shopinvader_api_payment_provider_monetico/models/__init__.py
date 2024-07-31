@@ -1,1 +1,1 @@
-from . import payment_transaction_monetico
+from . import payment_acquirer
