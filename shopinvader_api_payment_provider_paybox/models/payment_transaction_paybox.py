@@ -14,7 +14,9 @@ class PaymentTransactionsPaybox(models.Model):
 
         """
 
-        shopinvader_api_payment = self.env.context.get("shopinvader_api_payment")
+        shopinvader_api_payment = self.env.context.get(
+            "shopinvader_api_payment"
+        )
 
         res = super().paybox_form_generate_values(processing_values)
 
@@ -28,12 +30,25 @@ class PaymentTransactionsPaybox(models.Model):
             "shopinvader_api_payment_base_url"
         )
 
-        res["PBX_EFFECTUE"] = urljoin(shopinvader_api_payment_base_url, "sips/return")
-        res["PBX_ANNULE"] = urljoin(shopinvader_api_payment_base_url, "paybox/return")
-        res["PBX_REFUSE"] = urljoin(shopinvader_api_payment_base_url, "paybox/return")
-        res["PBX_ATTENTE"] = urljoin(shopinvader_api_payment_base_url, "paybox/return")
+        res["PBX_EFFECTUE"] = urljoin(
+            shopinvader_api_payment_base_url,
+            "sips/return"
+        )
+        res["PBX_ANNULE"] = urljoin(
+            shopinvader_api_payment_base_url,
+            "paybox/return"
+        )
+        res["PBX_REFUSE"] = urljoin(
+            shopinvader_api_payment_base_url,
+            "paybox/return"
+        )
+        res["PBX_ATTENTE"] = urljoin(
+            shopinvader_api_payment_base_url,
+            "paybox/return"
+        )
         res["PBX_REPONDRE_A"] = urljoin(
-            shopinvader_api_payment_base_url, "paybox/webhook"
+            shopinvader_api_payment_base_url,
+            "paybox/webhook"
         )
 
         del res["PBX_HMAC"]
