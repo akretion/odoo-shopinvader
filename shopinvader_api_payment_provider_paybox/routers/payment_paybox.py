@@ -22,6 +22,7 @@ _logger = logging.getLogger(__name__)
 
 
 @payment_router.get("/payment/providers/paybox/return")
+@payment_router.post("/payment/providers/paybox/return")
 def paybox_return(
     request: Request,
     odoo_env: Annotated[api.Environment, Depends(odoo_env)],
@@ -56,8 +57,8 @@ def paybox_return(
     )
 
 
-@payment_router.get(
-    "payment/providers/paybox/webhook"
+@payment_router.post(
+    "/payment/providers/paybox/webhook"
 )
 async def paybox_webhook(
     request: Request,
@@ -65,7 +66,7 @@ async def paybox_webhook(
 ) -> str:
     """Handle Paybox webhook"""
     data = request.scope["wsgi_environ"]["werkzeug.request"].values
-    _logger.infoi(
+    _logger.info(
         "webhook notification received from Paybox with data:\n%s",
         pprint.pformat(data)
     )
