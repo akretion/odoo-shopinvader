@@ -57,9 +57,8 @@ def paybox_return(
     )
 
 
-@payment_router.post(
-    "/payment/providers/paybox/webhook"
-)
+@payment_router.get("/payment/providers/paybox/webhook")
+@payment_router.post("/payment/providers/paybox/webhook")
 async def paybox_webhook(
     request: Request,
     odoo_env: Annotated[api.Environment, Depends(odoo_env)],
