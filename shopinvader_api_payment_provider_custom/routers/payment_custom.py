@@ -10,7 +10,7 @@ from fastapi.responses import RedirectResponse
 from odoo import api, models
 
 from odoo.addons.fastapi.dependencies import odoo_env
-from odoo.addons.payment.models.payment_transaction import PaymentTransaction
+from odoo.addons.payment.models.payment_acquirer import PaymentTransaction
 from odoo.addons.shopinvader_api_payment.routers import payment_router
 from odoo.addons.shopinvader_api_payment.routers.utils import (
     Payable,
@@ -34,14 +34,14 @@ def custom_payment_pending_msg(
         _logger.info("Could not decode payable")
         raise HTTPException(403) from e
     tx_sudo = odoo_env["payment.transaction"].sudo().browse(payable_obj.transaction_id)
-    tx_sudo._set_pending()
-    tx_sudo._execute_callback()
+    tx_sudo._set_transaction_pending()
+    tx_sudo.execute_callback()
     return RedirectResponse(
         url=add_query_params_in_url(
             frontend_redirect_url,
             {
                 "status": tx_state_to_redirect_status(tx_sudo.state),
-                "pending_message": tx_sudo.provider_id.pending_msg,
+                "pending_message": tx_sudo.acquirer_id.pending_msg,
             },
         ),
         status_code=303,
@@ -90,7 +90,7 @@ class ShopinvaderApiPaymentRouterHelper(models.AbstractModel):
         self, tx_sudo: PaymentTransaction, **kwargs: Any
     ) -> TransactionProcessingValues:
         tx_processing_values = super()._get_tx_processing_values(tx_sudo, **kwargs)
-        if tx_sudo.provider_id.code == "custom":
+        if tx_sudo.acquirer_id.provider == "transfer":
             tx_processing_values.redirect_form_html = (
                 self._get_custom_redirect_form_html(
                     tx_sudo,
