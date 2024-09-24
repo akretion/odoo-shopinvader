@@ -8,6 +8,43 @@
         <field name="domain">[('backend_id', '=', active_id)]</field>
     </record>
 
+    <record model="ir.ui.view" id="shopinvader_url_purge_search_view">
+        <field name="model">shopinvader.url.purge</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="url" />
+                <field name="purge_type_id" />
+                <field name="backend_id" />
+                <field name="state" />
+                <filter
+                    name="manual"
+                    string="Manual"
+                    domain="[('manual', '=', True)]"
+                />
+                <filter name="auto" string="Auto" domain="[('manual', '=', False)]" />
+                <group expand="0" string="Group By">
+                    <filter
+                        string="Backend"
+                        name="groupby_backend"
+                        domain="[]"
+                        context="{'group_by': 'backend_id'}"
+                    />
+                    <filter
+                        string="Type"
+                        name="groupby_type"
+                        domain="[]"
+                        context="{'group_by': 'purge_type_id'}"
+                    />
+                    <filter
+                        string="State"
+                        name="groupby_state"
+                        domain="[]"
+                        context="{'group_by': 'state'}"
+                    />
+                </group>
+            </search>
+        </field>
+    </record>
 
     <record model="ir.ui.view" id="shopinvader_url_purge_tree_view">
         <field name="model">shopinvader.url.purge</field>
@@ -22,7 +59,6 @@
             </tree>
         </field>
     </record>
-
 
     <record model="ir.ui.view" id="shopinvader_url_purge_form_view">
         <field name="model">shopinvader.url.purge</field>
@@ -80,6 +116,14 @@
         action="shopinvader_url_purge_act_window"
     />
 
-
+    <record model="ir.actions.server" id="action_purge_url">
+        <field name="name">Purge Url</field>
+        <field name="model_id" ref="model_shopinvader_url_purge" />
+        <field name="binding_model_id" ref="model_shopinvader_url_purge" />
+        <field name="state">code</field>
+        <field name="code">
+            records.purge_url()
+        </field>
+    </record>
 
 </odoo>
