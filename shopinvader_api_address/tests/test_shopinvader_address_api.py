@@ -43,6 +43,7 @@ class TestShopinvaderAddressApi(FastAPITransactionCase):
                 "zip": "1410",
                 "city": "Waterloo",
                 "country_id": cls.env.ref("base.be").id,
+                "title": cls.env.ref("base.res_partner_title_madam").id,
             }
         )
 
@@ -75,6 +76,7 @@ class TestShopinvaderAddressApi(FastAPITransactionCase):
         self.assertEqual(address.get("city"), self.test_partner.city)
         self.assertEqual(address.get("country_id"), self.test_partner.country_id.id)
         self.assertEqual(address.get("id"), self.test_partner.id)
+        self.assertEqual(address.get("title_id"), self.test_partner.title.id)
 
         with self._create_test_client(router=address_router) as test_client:
             response: Response = test_client.get(
@@ -98,6 +100,7 @@ class TestShopinvaderAddressApi(FastAPITransactionCase):
         self.assertEqual(address.get("city"), self.test_partner.city)
         self.assertEqual(address.get("country_id"), self.test_partner.country_id.id)
         self.assertEqual(address.get("id"), self.test_partner.id)
+        self.assertEqual(address.get("title_id"), self.test_partner.title.id)
 
     def test_get_delivery_address(self):
         """
@@ -186,6 +189,7 @@ class TestShopinvaderAddressApi(FastAPITransactionCase):
             "city": "Waterloo",
             "country_id": self.env.ref("base.be").id,
             "street": "test Street",
+            "title_id": self.env.ref("base.res_partner_title_madam").id,
         }
 
         with self._create_test_client(router=address_router) as test_client:

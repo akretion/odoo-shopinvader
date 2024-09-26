@@ -20,6 +20,7 @@ class AddressCreate(StrictExtendableBaseModel, extra="ignore"):
     email: str | None = None
     state_id: int | None = None
     country_id: int | None = None
+    title_id: int | None = None
 
     def to_res_partner_vals(self) -> dict:
         vals = {
@@ -33,6 +34,7 @@ class AddressCreate(StrictExtendableBaseModel, extra="ignore"):
             "email": self.email,
             "state_id": self.state_id,
             "country_id": self.country_id,
+            "title": self.title_id,
         }
 
         return vals
@@ -54,6 +56,7 @@ class AddressUpdate(StrictExtendableBaseModel, extra="ignore"):
     email: str | None = None
     state_id: int | None = None
     country_id: int | None = None
+    title_id: int | None = None
 
     def to_res_partner_vals(self) -> dict:
         fields = [
@@ -69,7 +72,10 @@ class AddressUpdate(StrictExtendableBaseModel, extra="ignore"):
             "country_id",
         ]
         values = self.model_dump(exclude_unset=True)
-        return {f: values[f] for f in fields if f in values}
+        result = {f: values[f] for f in fields if f in values}
+        if "title_id" in values:
+            result["title"] = values["title_id"]
+        return result
 
 
 # --- Invoicing Address ---
