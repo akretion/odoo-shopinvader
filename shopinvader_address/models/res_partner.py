@@ -1,13 +1,35 @@
 # Copyright 2023 ACSONE SA/NV
 # License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl).
 
-from odoo import _, models
+from odoo import _, fields, models
 from odoo.exceptions import MissingError, UserError
 
 
 class ResPartner(models.Model):
 
     _inherit = "res.partner"
+
+    shopinvader_update = fields.Boolean(compute="_compute_access", compute_sudo=True)
+    shopinvader_delete = fields.Boolean(compute="_compute_access", compute_sudo=True)
+
+    def _compute_access(self):
+        for record in self:
+            sale_order = self.env["sale.order"].search(
+                [
+                    ("partner_invoice_id", "=", record.id),
+                    ("state", "in", ("done", "sale")),
+                ],
+                limit=1,
+            )
+            stock_picking = self.env["stock.picking"].search(
+                [
+                    ("partner_id", "=", record.id),
+                    ("state", "in", ("draft", "confirmed", "waiting", "assigned")),
+                ],
+                limit=1,
+            )
+            record.shopinvader_update = not (sale_order or stock_picking) and True or False
+            record.shopinvader_delete = not sale_order and True or False
 
     def _ensure_shopinvader_invoicing_address_not_used(self) -> None:
         """
@@ -28,7 +50,7 @@ class ResPartner(models.Model):
         if len(sale_order) > 0:
             raise UserError(
                 _(
-                    "Can not update invoicing addresses(%(address_id)d)"
+                    "Can not update invoicing addresses(%(address_id)d) "
                     "because it is already used on confirmed sale order",
                     address_id=self.id,
                 )

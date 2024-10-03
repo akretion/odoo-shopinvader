@@ -4,6 +4,18 @@
 from extendable_pydantic import StrictExtendableBaseModel
 
 
+class AddressAccess(StrictExtendableBaseModel):
+    update: bool | None = None
+    delete: bool | None = None
+
+    @classmethod
+    def from_res_partner(cls, odoo_rec):
+        return cls.model_construct(
+            update=odoo_rec.shopinvader_update,
+            delete=odoo_rec.shopinvader_delete,
+        )
+
+
 class Address(StrictExtendableBaseModel):
     id: int
     name: str | None = None
@@ -17,6 +29,7 @@ class Address(StrictExtendableBaseModel):
     state_id: int | None = None
     country_id: int | None = None
     title_id: int | None = None
+    access: AddressAccess | None = None
 
     @classmethod
     def from_res_partner(cls, odoo_rec):
@@ -33,6 +46,7 @@ class Address(StrictExtendableBaseModel):
             state_id=odoo_rec.state_id.id or None,
             country_id=odoo_rec.country_id.id or None,
             title_id=odoo_rec.title.id or None,
+            access=AddressAccess.from_res_partner(odoo_rec),
         )
 
 
@@ -47,7 +61,6 @@ class InvoicingAddress(Address):
     def from_res_partner(cls, odoo_rec):
         res = super().from_res_partner(odoo_rec)
         res.vat = odoo_rec.vat or None
-
         return res
 
 
