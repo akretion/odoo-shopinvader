@@ -12,7 +12,7 @@
     "depends": [
         "fastapi",
         "shopinvader_api_payment",
-        "payment_custom",
+        "payment_transfer",
     ],
     "data": [],
     "demo": [],
