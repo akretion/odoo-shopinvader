@@ -14,6 +14,7 @@ from ..schemas import Settings
 from ..schemas.country import Country
 from ..schemas.lang import Lang
 from ..schemas.partner_title import PartnerTitle
+from ..schemas.country_state import State
 
 settings_router = APIRouter(tags=["settings"])
 
@@ -48,6 +49,7 @@ class ShopinvaderApiSettingsRouterHelper(models.AbstractModel):
             countries=self._get_countries(),
             partner_titles=self._get_partner_titles(),
             langs=self._get_langs(),
+            states=self._get_states(),
         )
         return settings
 
@@ -78,3 +80,12 @@ class ShopinvaderApiSettingsRouterHelper(models.AbstractModel):
             Lang.from_res_lang(lang)
             for lang in self.env["res.lang"].with_context(active_test=True).search([])
         ]
+
+    def _get_states(self) -> list[State]:
+        return [
+            State.from_res_country_state(state)
+            for state in self.env["res.country.state"].search(self._get_states_domain())
+        ]
+
+    def _get_states_domain(self) -> list:
+        return []
