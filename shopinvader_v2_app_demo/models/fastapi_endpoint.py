@@ -1,19 +1,14 @@
 # Copyright 2023 ACSONE SA/NV
 # License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl).
 
-from functools import partial
 from typing import Any, List
 
 from fastapi import APIRouter, FastAPI
-from fastapi.security import OAuth2AuthorizationCodeBearer
 
 from odoo import api, fields, models
 
 from odoo.addons.fastapi.dependencies import authenticated_partner_impl
-from odoo.addons.fastapi_auth_jwt.dependencies import (
-    auth_jwt_default_validator_name,
-    auth_jwt_http_header_authorization,
-)
+from odoo.addons.fastapi_auth_partner.routers.auth import auth_router
 from odoo.addons.shopinvader_api_address.routers.address_service import address_router
 from odoo.addons.shopinvader_api_cart.routers import cart_router
 from odoo.addons.shopinvader_api_customer.routers import customer_router
@@ -26,10 +21,9 @@ from odoo.addons.shopinvader_api_payment.routers import payment_router
 from odoo.addons.shopinvader_api_sale.routers import sale_router
 from odoo.addons.shopinvader_api_sale_loyalty.routers import sale_loyalty_cart_router
 from odoo.addons.shopinvader_api_settings.routers import settings_router
-from odoo.addons.shopinvader_api_signin_jwt.routers import signin_router
-from odoo.addons.shopinvader_fastapi_auth_jwt.dependencies import (
-    auth_jwt_authenticated_or_anonymous_partner,
-    auth_jwt_authenticated_or_anonymous_partner_autocreate,
+from odoo.addons.shopinvader_fastapi_auth_partner.dependencies import (
+    auth_partner_authenticated_or_anonymous_partner,
+    auth_partner_authenticated_or_anonymous_partner_autocreate,
 )
 
 
@@ -40,7 +34,6 @@ class FastapiEndpoint(models.Model):
         selection_add=[("shopinvader_demo", "Shopinvader Demo Endpoint")],
         ondelete={"shopinvader_demo": "cascade"},
     )
-    auth_jwt_validator_id = fields.Many2one("auth.jwt.validator")
 
     def _get_fastapi_routers(self):
         if self.app == "shopinvader_demo":
@@ -52,6 +45,7 @@ class FastapiEndpoint(models.Model):
         if "address" not in address_router.tags:
             address_router.tags.append("address")
         return [
+            auth_router,
             address_router,
             customer_router,
             delivery_carrier_router,
@@ -59,7 +53,6 @@ class FastapiEndpoint(models.Model):
             payment_router,
             sale_router,
             settings_router,
-            signin_router,
         ]
 
     def _get_shopinvader_demo_tags(self, params) -> list:
@@ -94,39 +87,18 @@ class FastapiEndpoint(models.Model):
         params = super()._prepare_fastapi_app_params()
         if self.app == "shopinvader_demo":
             params["openapi_tags"] = self._get_shopinvader_demo_tags(params)
-            params[
-                "swagger_ui_oauth2_redirect_url"
-            ] = "/shopinvader_demo/docs/oauth2-redirect"
-            params["swagger_ui_init_oauth"] = {
-                "clientId": "demo16.shopinvader.com",
-            }
         return params
 
     def _get_shopinvader_demo_app_dependencies_overrides(self):
-        oauth2_scheme = OAuth2AuthorizationCodeBearer(
-            authorizationUrl=(
-                "https://keycloak.demo16.shopinvader.com/"
-                "auth/realms/master/protocol/openid-connect/auth"
-            ),
-            tokenUrl=(
-                "https://keycloak.demo16.shopinvader.com/"
-                "auth/realms/master/protocol/openid-connect/token"
-            ),
-            scopes={"openid": "", "email": "", "profile": ""},
-            # Don't fail if missing Authorization header, as we look for the cookie too.
-            auto_error=False,
-        )
         return {
-            authenticated_partner_impl: auth_jwt_authenticated_or_anonymous_partner,
-            auth_jwt_default_validator_name: partial(
-                lambda a: a, self.auth_jwt_validator_id.name or None
-            ),
-            auth_jwt_http_header_authorization: oauth2_scheme,
+            authenticated_partner_impl:\
+                auth_partner_authenticated_or_anonymous_partner,
         }
 
     def _get_cart_app_dependencies_overrides(self):
         return {
-            authenticated_partner_impl: auth_jwt_authenticated_or_anonymous_partner_autocreate,
+            authenticated_partner_impl:\
+                auth_partner_authenticated_or_anonymous_partner_autocreate
         }
 
     def _get_app(self):
