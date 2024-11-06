@@ -88,7 +88,7 @@ class SaleOrder(models.Model):
         self.ensure_one()
         update_cmds = []
         for cart_line in cart.order_line:
-            line = self._get_cart_line(cart_line.product_id.id)
+            line = self._get_cart_line(cart_line.product_id.id, {})
             if line:
                 new_qty = line.product_uom_qty + cart_line.product_uom_qty
                 vals = {"product_uom_qty": new_qty}
