@@ -2,6 +2,8 @@
 # @author Sébastien BEAU <sebastien.beau@akretion.com>
 # License AGPL-3.0 or later (http://www.gnu.org/licenses/agpl).
 
+from sys import exc_info
+
 from odoo import models
 
 
@@ -29,6 +31,21 @@ class ShopinvaderVariant(models.Model):
                 == bindings[idx].shopinvader_product_id
             ):
                 idx += 1
-            return processing | bindings[0:idx], bindings[idx:]
-        else:
-            return processing, bindings
+            processing, bindings = processing | bindings[0:idx], bindings[idx:]
+            if not bindings:
+                # if there is no bindings that means that the job has not
+                # been splitted. If we are in an exception we just re raise it
+                # and the whole list of variants will not be computed.
+                # Not doing so would result in an infinite loop unless we
+                # force splitting to go down to the exact variant that raises
+                # the error, but at the expense of possibly a lot of jobs created
+                # raising errors.
+                # Note that it can lead to variants not being recomputed which
+                # should have been recomputed without error.
+
+                # Note : from python 3.11 on use sys.exception() instead
+                e = exc_info()[1]
+                if e:
+                    raise e
+
+        return processing, bindings
