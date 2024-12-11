@@ -1,7 +1,11 @@
+import logging
+
 from odoo import _, fields
 from odoo.exceptions import AccessDenied
 
 from odoo.addons.component.core import Component
+
+_logger = logging.getLogger(__name__)
 
 
 class CartService(Component):
@@ -29,7 +33,10 @@ class CartService(Component):
             raise AccessDenied(_("Invalid new auth token"))
 
         partner = self.env["shopinvader.partner"].search(
-            [("partner_email", "=", auth_token["email"])]
+            [
+                ("partner_email", "=", auth_token["email"]),
+                ("backend_id", "=", self.shopinvader_backend.id),
+            ]
         )
 
         if len(partner) != 1:
@@ -56,12 +63,25 @@ class CartService(Component):
         if old_cart and self.shopinvader_backend.merge_cart_on_transfer:
             # Merge cart:
             for line in old_cart.order_line:
-                self._add_item(
-                    cart,
-                    {
-                        "product_id": line.product_id.id,
-                        "item_qty": line.product_uom_qty,
-                    },
-                )
+                try:
+                    self._add_item(
+                        cart,
+                        {
+                            "product_id": line.product_id.id,
+                            "item_qty": line.product_uom_qty,
+                            # shopinvader_sale_coupon compat:
+                            # Prevent incremental recomputation
+                            "skip_coupon_recompute": True,
+                        },
+                    )
+                except Exception:
+                    _logger.warning(
+                        "Error while adding item %s to cart",
+                        line.product_id,
+                        exc_info=True,
+                    )
+            # Sale coupon compat (should be in a separate module but hey...)
+            if hasattr(self, "recompute_coupon_lines"):
+                self.recompute_coupon_lines(cart)
 
         return self._to_json(cart)
