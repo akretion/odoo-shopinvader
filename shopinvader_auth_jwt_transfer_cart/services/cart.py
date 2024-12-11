@@ -1,9 +1,9 @@
 import logging
+
 from odoo import _, fields
 from odoo.exceptions import AccessDenied
 
 from odoo.addons.component.core import Component
-
 
 _logger = logging.getLogger(__name__)
 
@@ -69,6 +69,9 @@ class CartService(Component):
                         {
                             "product_id": line.product_id.id,
                             "item_qty": line.product_uom_qty,
+                            # shopinvader_sale_coupon compat:
+                            # Prevent incremental recomputation
+                            "skip_coupon_recompute": True,
                         },
                     )
                 except Exception:
@@ -77,5 +80,8 @@ class CartService(Component):
                         line.product_id,
                         exc_info=True,
                     )
+            # Sale coupon compat (should be in a separate module but hey...)
+            if hasattr(cart, "recompute_coupon_lines"):
+                cart.recompute_coupon_lines()
 
         return self._to_json(cart)
