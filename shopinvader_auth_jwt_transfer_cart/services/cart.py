@@ -1,7 +1,11 @@
+import logging
 from odoo import _, fields
 from odoo.exceptions import AccessDenied
 
 from odoo.addons.component.core import Component
+
+
+_logger = logging.getLogger(__name__)
 
 
 class CartService(Component):
@@ -59,12 +63,19 @@ class CartService(Component):
         if old_cart and self.shopinvader_backend.merge_cart_on_transfer:
             # Merge cart:
             for line in old_cart.order_line:
-                self._add_item(
-                    cart,
-                    {
-                        "product_id": line.product_id.id,
-                        "item_qty": line.product_uom_qty,
-                    },
-                )
+                try:
+                    self._add_item(
+                        cart,
+                        {
+                            "product_id": line.product_id.id,
+                            "item_qty": line.product_uom_qty,
+                        },
+                    )
+                except Exception:
+                    _logger.warning(
+                        "Error while adding item %s to cart",
+                        line.product_id,
+                        exc_info=True,
+                    )
 
         return self._to_json(cart)
