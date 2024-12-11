@@ -29,7 +29,10 @@ class CartService(Component):
             raise AccessDenied(_("Invalid new auth token"))
 
         partner = self.env["shopinvader.partner"].search(
-            [("partner_email", "=", auth_token["email"])]
+            [
+                ("partner_email", "=", auth_token["email"]),
+                ("backend_id", "=", self.shopinvader_backend.id),
+            ]
         )
 
         if len(partner) != 1:
