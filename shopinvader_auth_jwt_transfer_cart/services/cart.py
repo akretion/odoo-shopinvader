@@ -81,7 +81,7 @@ class CartService(Component):
                         exc_info=True,
                     )
             # Sale coupon compat (should be in a separate module but hey...)
-            if hasattr(self, "recompute_coupon_lines"):
-                self.recompute_coupon_lines(cart)
+            if hasattr(cart, "recompute_coupon_lines"):
+                cart.recompute_coupon_lines()
 
         return self._to_json(cart)
