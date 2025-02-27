@@ -80,12 +80,8 @@ class ResPartner(models.Model):
         """
         Delete anonymous partner and cookie
         """
-        self._get_anonymous_partner__cookie(cookies).unlink()
-        response.set_cookie(
-            key=COOKIE_NAME,
-            max_age=0,
-            expires=0,
-        )
+        self._get_anonymous_partner__cookie(cookies).with_delay().unlink()
+        response.delete_cookie(key=COOKIE_NAME)
 
     @api.model
     def _get_anonymous_partner__token(self, token: str):
