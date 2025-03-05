@@ -33,7 +33,6 @@ class InvoiceService(Component):
         :return: dict
         """
         default_validator = self._default_validator_search()
-        default_validator.pop("scope", {})
         default_validator.pop("domain", {})
         return default_validator
 
