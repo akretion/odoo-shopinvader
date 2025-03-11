@@ -1,6 +1,6 @@
 import logging
 
-from odoo import _, fields
+from odoo import _
 from odoo.exceptions import AccessDenied
 
 from odoo.addons.component.core import Component
@@ -27,7 +27,7 @@ class CartService(Component):
         }
 
     def transfer(self, token=None):
-        cart = self._get()
+        anonymous_cart = self._get()
         auth_token = self._decode_token(token)
         if not auth_token or not auth_token.get("email"):
             raise AccessDenied(_("Invalid new auth token"))
@@ -42,46 +42,37 @@ class CartService(Component):
         if len(partner) != 1:
             raise AccessDenied(_("Invalid partner email in token"))
 
-        old_cart = None
+        # Swap partner to non anonymous partner
+        self.work.invader_partner = partner
+        self.work.invader_partner_user = partner
+        self.work.partner = partner.record_id
+        self.work.partner_user = partner.record_id
+
         if self.shopinvader_backend.merge_cart_on_transfer:
-            old_partner = self.work.partner
-            self.work.partner = partner.record_id
-            old_cart = self._get(False)
-            self.work.partner = old_partner
+            partner_cart = self._get()
+        else:
+            partner_cart = self._create_empty_cart()
 
-        # Change cart partner:
-        res_partner_id = partner.record_id.id
-        cart.date_order = fields.Datetime.now()
-        cart.write_with_onchange(
-            {
-                "partner_id": res_partner_id,
-                "partner_shipping_id": res_partner_id,
-                "partner_invoice_id": res_partner_id,
-            }
-        )
+        self._merge_cart(anonymous_cart, partner_cart)
+        return self._to_json(partner_cart)
 
-        if old_cart and self.shopinvader_backend.merge_cart_on_transfer:
-            # Merge cart:
-            for line in old_cart.order_line:
-                try:
-                    self._add_item(
-                        cart,
-                        {
-                            "product_id": line.product_id.id,
-                            "item_qty": line.product_uom_qty,
-                            # shopinvader_sale_coupon compat:
-                            # Prevent incremental recomputation
-                            "skip_coupon_recompute": True,
-                        },
-                    )
-                except Exception:
-                    _logger.warning(
-                        "Error while adding item %s to cart",
-                        line.product_id,
-                        exc_info=True,
-                    )
-            # Sale coupon compat (should be in a separate module but hey...)
-            if hasattr(cart, "recompute_coupon_lines"):
-                cart.recompute_coupon_lines()
+    def _prepare_transfer_cart_line(self, line):
+        return {
+            "product_id": line.product_id.id,
+            "item_qty": line.product_uom_qty,
+        }
 
-        return self._to_json(cart)
+    def _get_transfer_order_lines(self, cart):
+        return cart.order_line
+
+    def _merge_cart(self, anonymous_cart, partner_cart):
+        # Merge cart:
+        for line in self._get_transfer_order_lines(anonymous_cart):
+            try:
+                self._add_item(partner_cart, self._prepare_transfer_cart_line(line))
+            except Exception:
+                _logger.warning(
+                    "Error while adding item %s to cart",
+                    line.product_id,
+                    exc_info=True,
+                )
