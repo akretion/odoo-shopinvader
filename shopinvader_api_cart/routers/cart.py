@@ -242,6 +242,9 @@ class ShopinvaderApiCartRouterHelper(models.AbstractModel):
             vals["name"] = self._get_sale_order_line_name(product_id)
         return vals
 
+    def _prepare_get_cart_line_from_key(self, key):
+        return {"product_id": key.product_id}
+
     @api.model
     def _apply_transactions(self, cart, transactions: list[CartTransaction]):
         """Apply transactions to the given cart."""
@@ -257,11 +260,7 @@ class ShopinvaderApiCartRouterHelper(models.AbstractModel):
         # recompute methods on the SO. These methods will be triggered
         # by the orm into the 'write' process
         for key, trxs in grouped_transactions.items():
-            line = cart._get_cart_line(
-                **self._apply_transactions_creating_new_cart_line_prepare_vals(
-                    cart, trxs, {"product_id": key.product_id}
-                )
-            )
+            line = cart._get_cart_line(**self._prepare_get_cart_line_from_key(key)))
             if line:
                 cmd = self._apply_transactions_on_existing_cart_line(line, trxs)
             else:

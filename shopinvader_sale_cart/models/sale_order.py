@@ -81,11 +81,16 @@ class SaleOrder(models.Model):
         self.ensure_one()
         return self.order_line.filtered(lambda sol: sol._match_cart_line(**kwargs))[:1]
 
-    def _update_cart_lines_from_cart(self, cart):
+    def _prepare_get_cart_line_from_line(self, line):
+        return {"product_id": line.product_id.id}
+
+    def _transfert_cart_lines_from_cart(self, cart):
         self.ensure_one()
         update_cmds = []
         for cart_line in cart.order_line:
-            line = self._get_cart_line(**cart_line.read(load=False)[0])
+            line = self._get_cart_line(
+                **self._prepare_get_cart_line_from_line(cart_line)
+            )
             if line:
                 new_qty = line.product_uom_qty + cart_line.product_uom_qty
                 vals = {"product_uom_qty": new_qty}
@@ -111,5 +116,5 @@ class SaleOrder(models.Model):
         cart = self._find_open_cart(partner_id)
         if not cart:
             cart = self._create_empty_cart(partner_id)
-        cart._update_cart_lines_from_cart(self)
+        cart._transfert_cart_lines_from_cart(self)
         return cart
