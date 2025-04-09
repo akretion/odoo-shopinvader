@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!-- Copyright 2025 Akretion
+     License AGPL-3.0 or later (http://www.gnu.org/licenses/agpl). -->
+<odoo>
+
+    <record model="ir.ui.view" id="product_category_form_view">
+        <field name="name">product.category.form (in shopinvader_product)</field>
+        <field name="model">product.category</field>
+        <field name="inherit_id" ref="product.product_category_form_view" />
+        <field name="arch" type="xml">
+            <group name="first" position="after">
+                <group attrs="{'invisible': [('parent_id', '!=', False)]}">
+                    <field
+                        name="univers"
+                        attrs="{'invisible': [('parent_id', '!=', False)]}"
+                    />
+                </group>
+            </group>
+        </field>
+    </record>
+
+</odoo>
