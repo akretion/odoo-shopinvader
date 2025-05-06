@@ -6,6 +6,7 @@
     "depends": [
         "shopinvader_auth_jwt_transfer_cart",
         "shopinvader_sale_coupon",
+        "sale_coupon_deferred_coupon_dedup",  # Should be in a glue module
     ],
     "auto_install": True,
     "author": "Akretion, Odoo Community Association (OCA)",
