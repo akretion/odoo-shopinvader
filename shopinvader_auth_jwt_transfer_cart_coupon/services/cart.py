@@ -17,6 +17,22 @@ class CartService(Component):
 
     def _merge_cart(self, anonymous_cart, partner_cart):
         super()._merge_cart(anonymous_cart, partner_cart)
+
+        # First add sale_coupon_deferred_coupon_dedup unconfirmed_coupon_ids
+        # This part should be in a glue module
+        unconfirmed_coupon_ids = anonymous_cart.unconfirmed_applied_coupon_ids.filtered(
+            lambda c: c.state not in ["used", "expired", "cancel"]
+        ).ids
+        anonymous_cart.write({"unconfirmed_applied_coupon_ids": [(5, 0, 0)]})
+        partner_cart.write(
+            {
+                "unconfirmed_applied_coupon_ids": [
+                    (4, coupon_id) for coupon_id in unconfirmed_coupon_ids
+                ]
+            }
+        )
+
+        # Then add sale_coupon applied_coupon_ids
         coupon_ids = anonymous_cart.applied_coupon_ids.filtered(
             lambda c: c.state not in ["used", "expired", "cancel"]
         ).ids
