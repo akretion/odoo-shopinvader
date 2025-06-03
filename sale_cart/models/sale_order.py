@@ -5,10 +5,14 @@ from odoo import fields, models
 
 
 class SaleOrder(models.Model):
-
     _inherit = "sale.order"
 
-    typology = fields.Selection(selection_add=[("cart", "Cart")])
+    typology = fields.Selection(
+        selection_add=[("cart", "Cart")],
+        ondelete={
+            "cart": "cascade",
+        },
+    )
 
     def _confirm_cart(self):
         self.ensure_one()
