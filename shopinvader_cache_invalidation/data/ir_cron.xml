@@ -5,13 +5,13 @@
         <field name="active" eval="True" />
         <field name="user_id" ref="base.user_root" />
         <field name="interval_number">1</field>
-        <field name="interval_type">hours</field>
+        <field name="interval_type">minutes</field>
         <field name="numbercall">-1</field>
         <field name="doall" eval="False" />
         <field name="model_id" ref="model_shopinvader_url_purge" />
         <field name="state">code</field>
         <field
             name="code"
-        >model.search([("state", "=", "to_purge")]).purge_url()</field>
+        >model.search([("state", "=", "to_purge")], limit=30).purge_url()</field>
     </record>
 </odoo>

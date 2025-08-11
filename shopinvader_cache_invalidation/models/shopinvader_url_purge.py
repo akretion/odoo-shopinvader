@@ -2,9 +2,9 @@
 # @author Matthieu SAISON <matthieu.saison@akretion.com>
 # License AGPL-3.0 or later (https: //www.gnu.org/licenses/agpl).
 import logging
+from urllib.parse import urljoin
 
 import requests
-from urllib.parse import urljoin
 
 from odoo import fields, models
 
@@ -29,8 +29,23 @@ class ShopinvaderUrlPurge(models.Model):
             ("failed", "Failed"),
         ],
         readonly=True,
+        index=True,
     )
     error = fields.Char(readonly=True)
+    action = fields.Selection(
+        [
+            ("refresh", "Refresh"),
+            ("mass_purge", "Mass Purge"),
+        ],
+        help=(
+            "Refresh can only be used with explicit url, this will invalidate the "
+            "cache and force to refresh the page.\n"
+            "Mass Purge can be used with regex (ex: '.*' and this will purge all url matching "
+            "the pattern without refreshing the page"
+        ),
+        default="refresh",
+        required=True,
+    )
 
     def _request_purge(self, url_key, model_name, model_description, backend_id):
         record = self.search(
@@ -59,12 +74,21 @@ class ShopinvaderUrlPurge(models.Model):
     def purge_url(self):
         for backend in self.backend_id:
             s = requests.Session()
-            s.headers.update({"X-force-cache-refresh": backend.cache_refresh_secret})
+            s.headers.update({"X-cache-auth-token": backend.cache_refresh_secret})
             for record in self:
                 if record.backend_id == backend:
-                    url = urljoin(record.backend_id.location, record.url)
                     try:
-                        response = s.get(url)
+                        if record.action == "refresh":
+                            url = urljoin(record.backend_id.location, record.url)
+                            response = s.get(url, headers={"X-force-refresh": "?1"})
+                        elif record.action == "mass_purge":
+                            response = s.request(
+                                "BAN",
+                                record.backend_id.location,
+                                headers={"x-invalidate-pattern": record.url},
+                            )
+                        else:
+                            raise NotImplementedError
                         if response.status_code != 200:
                             raise Exception(
                                 "Response Error code %s %s",

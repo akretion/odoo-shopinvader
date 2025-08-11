@@ -41,6 +41,12 @@
                         domain="[]"
                         context="{'group_by': 'state'}"
                     />
+                    <filter
+                        string="Action"
+                        name="groupby_action"
+                        domain="[]"
+                        context="{'group_by': 'action'}"
+                    />
                 </group>
             </search>
         </field>
@@ -52,6 +58,7 @@
             <tree>
                 <field name="url" />
                 <field name="purge_type_id" />
+                <field name="action" />
                 <field name="backend_id" />
                 <field name="state" />
                 <field name="date_last_purge" />
@@ -69,6 +76,10 @@
                 </header>
                 <group>
                     <field name="url" attrs="{'readonly': [('manual', '=', False)]}" />
+                    <field
+                        name="action"
+                        attrs="{'readonly': [('manual', '=', False)]}"
+                    />
                     <field
                         name="purge_type_id"
                         attrs="{'readonly': [('manual', '=', False)]}"
