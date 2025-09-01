@@ -25,6 +25,7 @@ sale_line_router = APIRouter(tags=["sales"])
 
 @sale_line_router.get("/sales/lines")
 @sale_line_router.get("/sales/{sale_id}/lines")
+@sale_line_router.get("/sale_lines")
 def search(
     params: Annotated[SaleLineSearch, Depends()],
     paging: Annotated[Paging, Depends(paging)],
@@ -50,6 +51,7 @@ def search(
 
 
 @sale_line_router.get("/sales/lines/{sale_line_id}")
+@sale_line_router.get("/sale_lines/{sale_line_id}")
 def get(
     sale_line_id: int,
     env: Annotated[api.Environment, Depends(authenticated_partner_env)],
