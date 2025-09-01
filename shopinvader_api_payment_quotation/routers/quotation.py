@@ -27,7 +27,7 @@ def quotation_payable(
     quotation_id: int,
 ) -> PaymentData:
     quotation = (
-        env["shopinvader_api_quotation.quotations_router.helper"]
+        env["shopinvader_api_quotation.router.helper"]
         .new({"partner": partner})
         ._get(quotation_id)
     )
