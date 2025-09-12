@@ -457,6 +457,7 @@ class CartService(Component):
                 "typology": "cart",
                 "partner_id": partner.id,
                 "shopinvader_backend_id": self.shopinvader_backend.id,
+                "company_id": self.shopinvader_backend.company_id,
             }
         )
         # Play onchanges
