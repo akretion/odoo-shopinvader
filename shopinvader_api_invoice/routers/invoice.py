@@ -114,5 +114,10 @@ class ShopinvaderApiInvoiceInvoicesRouterHelper(models.AbstractModel):
         )
 
     def _get_pdf(self, record_id) -> tuple[str, bytes]:
+        from odoo.tools.safe_eval import safe_eval
+
         record = self._get(record_id)
-        return record.sudo()._generate_report("account.account_invoices")
+        report = self.env.ref("account.account_invoices").with_user(1)
+        filename = safe_eval(report.print_report_name, {"object": record})
+        content = report._render([record.id], {"report_type": report.report_type})[0]
+        return filename, content

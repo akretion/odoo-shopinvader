@@ -16,6 +16,5 @@
         "shopinvader_api_security_invoice",
         "shopinvader_filtered_model",
         "extendable_fastapi",
-        "report_generate_helper",
     ],
 }
