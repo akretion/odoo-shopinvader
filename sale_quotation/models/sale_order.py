@@ -188,7 +188,8 @@ class SaleOrder(models.Model):
 
     def action_customer_accept_quotation(self):
         self._check_customer_action_allowed("accept_quotation")
-        return self.action_confirm()
+        self.quotation_state = "accepted"
+        self.typology = "sale"
 
     def action_customer_reset_quotation_to_draft(self):
         self._check_customer_action_allowed("reset_to_draft")
