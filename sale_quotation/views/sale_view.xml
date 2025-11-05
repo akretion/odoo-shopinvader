@@ -9,93 +9,21 @@
         <field name="model">sale.order</field>
         <field name="inherit_id" ref="sale.view_order_form" />
         <field name="arch" type="xml">
-            <xpath expr="//header" position="after">
-                <header
-                    name="quotation_header"
-                    attrs="{'invisible': [('use_customer_quotation_workflow', '=', False)]}"
-                >
-                    <field
-                        name="is_action_customer_request_quotation_allowed"
-                        invisible="1"
-                    />
-                    <field
-                        name="is_action_customer_accept_quotation_allowed"
-                        invisible="1"
-                    />
-                    <field
-                        name="is_action_customer_cancel_quotation_allowed"
-                        invisible="1"
-                    />
-                    <field
-                        name="is_action_customer_reset_quotation_to_draft_allowed"
-                        invisible="1"
-                    />
-                    <button
-                        name="action_customer_request_quotation"
-                        string="Customer Request Quotation"
-                        type="object"
-                        attrs="{'invisible': [('is_action_customer_request_quotation_allowed', '=', False)]}"
-                    />
-                    <button
-                        name="action_customer_accept_quotation"
-                        string="Customer Accept Quotation"
-                        type="object"
-                        attrs="{'invisible': [('is_action_customer_accept_quotation_allowed', '=', False)]}"
-                    />
-                    <button
-                        name="action_customer_cancel_quotation"
-                        string="Customer Cancel Quotation"
-                        type="object"
-                        attrs="{'invisible': [('is_action_customer_cancel_quotation_allowed', '=', False)]}"
-                    />
-                    <button
-                        name="action_customer_reset_quotation_to_draft"
-                        string="Customer Reset Quotation to Draft"
-                        type="object"
-                        attrs="{'invisible': [('is_action_customer_reset_quotation_to_draft_allowed', '=', False)]}"
-                    />
-                    <field
-                        name="quotation_state"
-                        widget="statusbar"
-                        statusbar_visible="draft,customer_request,waiting_acceptation,accepted"
-                        attrs="{'invisible': [('use_customer_quotation_workflow', '!=', True)]}"
-                    />
-
-                </header>
-            </xpath>
-
-            <field name="partner_id" position="before">
+            <field name="state" position="before">
                 <field
-                    name="use_customer_quotation_workflow"
-                    widget="boolean_toggle"
-                    options="{'autosave': False, 'terminology': 'Use Customer Quotation Workflow'}"
-                    class="oe_inline"
+                    name="quotation_state"
+                    widget="statusbar"
+                    statusbar_visible="draft,waiting_acceptation,accepted"
+                    attrs="{'invisible': [('state', 'in', ('sale', 'done'))]}"
                 />
             </field>
-            <xpath
-                expr="//header/button[@name='action_confirm' and @id='action_confirm']"
-                position="attributes"
-            >
-                <attribute name="context" operation="update">
-                    {
-                    "use_quotation_confirm_wizard": True,
-                    }
-                </attribute>
-            </xpath>
-            <xpath
-                expr="//header/button[@name='action_confirm' and not(@id)]"
-                position="attributes"
-            >
-                <attribute name="context" operation="update">
-                    {
-                    "use_quotation_confirm_wizard": True,
-                    }
-                </attribute>
-            </xpath>
-
+            <field name="state" position="attributes">
+                <attribute
+                    name="attrs"
+                >{"invisible": [("state", "in", ("draft", "sent", "cancel"))]}</attribute>
+            </field>
         </field>
     </record>
-
 
     <record id="view_quotation_tree" model="ir.ui.view">
         <field name="model">sale.order</field>
