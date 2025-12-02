@@ -13,7 +13,7 @@
     "depends": [
         "shopinvader_search_engine",
         "search_engine_image_thumbnail",
-        "fs_product_multi_image",
+        "storage_image_product",
     ],
     "data": [
         "views/se_backend.xml",

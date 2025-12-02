@@ -8,7 +8,7 @@
 from odoo import _, fields, models
 from odoo.exceptions import UserError
 
-from odoo.addons.fs_image.fields import FSImageValue
+from odoo.addons.storage_file.models.storage_file import StorageFile
 
 CDN_HELP_TEXT = """
 
@@ -52,7 +52,7 @@ class SeBackend(models.Model):
         default="odoo",
     )
 
-    def _get_image_url_for_image(self, image: FSImageValue) -> str:
+    def _get_image_url_for_image(self, image: StorageFile) -> str:
         """Get the URL of the image.
 
         :param image: The image

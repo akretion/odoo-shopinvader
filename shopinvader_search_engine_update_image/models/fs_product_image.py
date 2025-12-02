@@ -5,8 +5,8 @@ from odoo import models
 
 
 class FsProductImage(models.Model):
-    _name = "fs.product.image"
-    _inherit = ["fs.product.image", "se.product.update.mixin"]
+    _name = "product.image.relation"
+    _inherit = ["product.image.relation", "se.product.update.mixin"]
 
     def get_products(self):
         return self.mapped("product_tmpl_id")
