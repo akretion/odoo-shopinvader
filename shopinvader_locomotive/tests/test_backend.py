@@ -8,7 +8,6 @@ from .common import LocoCommonCase, mock_site_api
 
 
 class TestBackendCommonCase(LocoCommonCase):
-
     maxDiff = None
 
     ODOO_STORE_JSON_KEY = [
@@ -48,7 +47,6 @@ class TestBackendCommonCase(LocoCommonCase):
                 # and there might be some modules
                 # (eg: shopinvader_elasticsearch)
                 # that tie a specific backend to the main demo backend.
-                "se_backend_id": False,
                 # ---------------------
                 "allowed_country_ids": [(6, 0, country_ids)],
                 "filter_ids": [(6, 0, filter_ids)],

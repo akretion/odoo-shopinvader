@@ -90,7 +90,7 @@ class ShopinvaderSiteExportMapper(Component):
 
     @mapping
     def search_engine_config(self, record):
-        se_backend = record.se_backend_id
+        se_backend = False  # record.se_backend_id
         if not se_backend:
             _logger.warning("No search engine configured yet.")
             return {}
