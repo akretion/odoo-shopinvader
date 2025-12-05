@@ -8,7 +8,6 @@ from odoo.modules.module import get_resource_path
 DEMO_POST_INIT = [
     "demo/storage_file_demo.xml",
     "demo/storage_image_demo.xml",
-    "demo/product_image_relation_demo.xml",
 ]
 
 
