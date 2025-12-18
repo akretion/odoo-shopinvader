@@ -49,8 +49,7 @@ class AbstractSaleService(AbstractComponent):
         )
         if not variant:
             _logger.debug(
-                "No variant found with ctx lang `%s`. "
-                "Falling back to partner lang `%s",
+                "No variant found with ctx lang `%s`. Falling back to partner lang `%s",
                 self.env.context.get("lang"),
                 line.order_id.partner_id.lang,
             )
@@ -120,5 +119,6 @@ class AbstractSaleService(AbstractComponent):
     def _to_json(self, sales, **kw):
         res = []
         for sale in sales:
-            res.append(self._convert_one_sale(sale))
+            sale.check_access_rights("read")
+            res.append(self._convert_one_sale(sale.sudo()))
         return res
