@@ -4,9 +4,7 @@
 
 
 from odoo.addons.extendable_fastapi.tests.common import FastAPITransactionCase
-from odoo.addons.sale_loyalty.tests.common import TestSaleCouponCommon
-
-from ..routers.loyalty import loyalty_router
+from odoo.addons.sale_coupon.tests.common import TestSaleCouponCommon
 
 
 class TestShopinvaderSaleLoyaltyCommon(FastAPITransactionCase, TestSaleCouponCommon):
@@ -35,196 +33,36 @@ class TestShopinvaderSaleLoyaltyCommon(FastAPITransactionCase, TestSaleCouponCom
         cls.default_fastapi_authenticated_partner = partner.with_user(
             cls.user_with_rights
         )
-        cls.default_fastapi_router = loyalty_router
 
     def setUp(self):
         super().setUp()
-        self.gift_product_tag = self.env["product.tag"].create({"name": "Gift Product"})
 
     def _generate_coupons(self, program, qty=1):
         existing_coupons = program.coupon_ids
+
         # Create coupons
-        self.env["loyalty.generate.wizard"].with_context(active_id=program.id).create(
-            {
-                "coupon_qty": qty,
-            }
-        ).generate_coupons()
+        (
+            self.env["coupon.generate.wizard"]
+            .with_context(active_id=program.id)
+            .create(
+                {
+                    "generation_type": "nbr_coupon",
+                    "nbr_coupons": qty,
+                }
+            )
+            .generate_coupon()
+        )
         # Return only the created coupons
         return program.coupon_ids - existing_coupons
 
-    def _create_program_choice_reward_with_code(self, product):
-        return self.env["loyalty.program"].create(
+    def _create_program(self, code=False, code_needed=True):
+        return self.env["coupon.program"].create(
             {
-                "name": "With coupon: Buy 1 product, choose 10% on all or 25% on cheapest",
-                "program_type": "coupons",
-                "trigger": "with_code",
-                "applies_on": "current",
-                "company_id": self.env.company.id,
-                "rule_ids": [
-                    (
-                        0,
-                        0,
-                        {
-                            "product_ids": [(4, product.id)],
-                            "minimum_qty": 1,
-                        },
-                    )
-                ],
-                "reward_ids": [
-                    (
-                        0,
-                        0,
-                        {
-                            "reward_type": "discount",
-                            "discount": 10,
-                            "required_points": 1,
-                        },
-                    ),
-                    (
-                        0,
-                        0,
-                        {
-                            "reward_type": "discount",
-                            "discount": 25,
-                            "discount_applicability": "cheapest",
-                            "required_points": 1,
-                        },
-                    ),
-                ],
-            }
-        )
-
-    def _create_program_choice_reward_auto(self, product):
-        return self.env["loyalty.program"].create(
-            {
-                "name": "Promotion: Buy 1 product, choose 10% on all or 25% on cheapest",
-                "program_type": "promotion",
-                "trigger": "auto",
-                "applies_on": "current",
-                "company_id": self.env.company.id,
-                "rule_ids": [
-                    (
-                        0,
-                        0,
-                        {
-                            "product_ids": [(4, product.id)],
-                            "minimum_qty": 1,
-                        },
-                    )
-                ],
-                "reward_ids": [
-                    (
-                        0,
-                        0,
-                        {
-                            "reward_type": "discount",
-                            "discount": 10,
-                            "required_points": 1,
-                        },
-                    ),
-                    (
-                        0,
-                        0,
-                        {
-                            "reward_type": "discount",
-                            "discount": 25,
-                            "discount_applicability": "cheapest",
-                            "required_points": 1,
-                        },
-                    ),
-                ],
-            }
-        )
-
-    def _create_program_free_product_choice_with_code(self, rule_product, product_tag):
-        return self.env["loyalty.program"].create(
-            {
-                "name": "With code: Choose 1B or 1C free if 1A bought",
-                "program_type": "coupons",
-                "trigger": "with_code",
-                "applies_on": "current",
-                "company_id": self.env.company.id,
-                "rule_ids": [
-                    (
-                        0,
-                        0,
-                        {
-                            "product_ids": [(4, rule_product.id)],
-                            "minimum_qty": 1,
-                        },
-                    )
-                ],
-                "reward_ids": [
-                    (
-                        0,
-                        0,
-                        {
-                            "reward_type": "product",
-                            "reward_product_tag_id": product_tag.id,
-                        },
-                    )
-                ],
-            }
-        )
-
-    def _create_program_free_product_choice_auto(self, rule_product, product_tag):
-        return self.env["loyalty.program"].create(
-            {
-                "name": "Promotion: Choose 1B or 1C free if 1A bought",
-                "program_type": "promotion",
-                "trigger": "auto",
-                "applies_on": "current",
-                "company_id": self.env.company.id,
-                "rule_ids": [
-                    (
-                        0,
-                        0,
-                        {
-                            "product_ids": [(4, rule_product.id)],
-                            "minimum_qty": 1,
-                        },
-                    )
-                ],
-                "reward_ids": [
-                    (
-                        0,
-                        0,
-                        {
-                            "reward_type": "product",
-                            "reward_product_tag_id": product_tag.id,
-                        },
-                    )
-                ],
-            }
-        )
-
-    def _create_discount_code_program(self):
-        return self.env["loyalty.program"].create(
-            {
-                "name": "50% on order with code 'PROMOTION'",
-                "program_type": "promo_code",
-                "trigger": "with_code",
-                "applies_on": "current",
-                "company_id": self.env.company.id,
-                "rule_ids": [
-                    (
-                        0,
-                        0,
-                        {
-                            "code": "PROMOTION",
-                        },
-                    )
-                ],
-                "reward_ids": [
-                    (
-                        0,
-                        0,
-                        {
-                            "reward_type": "discount",
-                            "discount": 50,
-                            "required_points": 1,
-                        },
-                    ),
-                ],
+                "name": "Code for 10% on orders",
+                "promo_code_usage": "code_needed" if code_needed else "no_code_needed",
+                "promo_code": code,
+                "discount_type": "percentage",
+                "discount_percentage": 10.0,
+                "program_type": "promotion_program",
             }
         )
