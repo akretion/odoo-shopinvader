@@ -16,7 +16,7 @@
     ],
     "data": [
         "views/sale_view.xml",
-        "wizards/sale_order_wizard_views.xml",
+        "data/data.xml",
         "security/ir.model.access.csv",
     ],
     "installable": True,

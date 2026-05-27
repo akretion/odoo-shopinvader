@@ -6,7 +6,7 @@
 
 
 from odoo import _, api, fields, models
-from odoo.exceptions import UserError
+from odoo.exceptions import RedirectWarning, UserError
 
 from odoo.addons.sale.models.sale_order import READONLY_FIELD_STATES
 
@@ -197,20 +197,18 @@ class SaleOrder(models.Model):
                 for rec in customer_quotations
             )
         ):
-            return {
-                "name": _("Confirm Sale Order"),
-                "type": "ir.actions.act_window",
-                "res_model": "sale.order.confirm.warning.wizard",
-                "views": [[False, "form"]],
-                "target": "new",
-                "context": {
-                    "default_sale_order_ids": self.ids,
-                    "default_message": _(
-                        "The selected quotation(s) are not in 'Waiting Acceptation' "
-                        "state. Are you sure you want to confirm them?"
-                    ),
+            raise RedirectWarning(
+                _(
+                    "The selected quotation(s) are not in 'Waiting Acceptation' "
+                    "state. Are you sure you want to confirm them?"
+                ),
+                self.env.ref("sale_quotation.action_force_confirm_quotation").id,
+                "Continue",
+                additional_context={
+                    "active_model": "sale.order",
+                    "active_ids": self.ids,
                 },
-            }
+            )
         customer_quotations.quotation_state = "accepted"
         customer_quotations.typology = "sale"
         return super().action_confirm()
