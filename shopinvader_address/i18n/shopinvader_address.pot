@@ -37,12 +37,6 @@ msgstr ""
 #. module: shopinvader_address
 #. odoo-python
 #: code:addons/shopinvader_address/models/res_partner.py:0
-msgid "Creation of invoicing addresses is not supported"
-msgstr ""
-
-#. module: shopinvader_address
-#. odoo-python
-#: code:addons/shopinvader_address/models/res_partner.py:0
 msgid "Delivery address not found, id: %(address_id)d"
 msgstr ""
 
@@ -50,6 +44,30 @@ msgstr ""
 #. odoo-python
 #: code:addons/shopinvader_address/models/res_partner.py:0
 msgid "Invoicing address not found, id: %(address_id)d"
+msgstr ""
+
+#. module: shopinvader_address
+#: model:ir.model.fields,field_description:shopinvader_address.field_res_partner__shopinvader_address_disabled
+#: model:ir.model.fields,field_description:shopinvader_address.field_res_users__shopinvader_address_disabled
+msgid "Shopinvader Address Disabled"
+msgstr ""
+
+#. module: shopinvader_address
+#: model:ir.model.fields,help:shopinvader_address.field_res_partner__shopinvader_address_disabled
+#: model:ir.model.fields,help:shopinvader_address.field_res_users__shopinvader_address_disabled
+msgid ""
+"Technical field. The address is not exposed anymore by the Shopinvader "
+"address API: it has been replaced by a new one and is kept for the history. "
+"A contact is archived instead, but the main partner of an account cannot be "
+"archived, hence this flag."
+msgstr ""
+
+#. module: shopinvader_address
+#. odoo-python
+#: code:addons/shopinvader_address/models/res_partner.py:0
+msgid ""
+"The invoicing address of an account can not be deleted, create a new one "
+"instead."
 msgstr ""
 
 #. module: shopinvader_address

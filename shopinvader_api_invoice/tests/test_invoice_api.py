@@ -159,3 +159,60 @@ class TestInvoice(FastAPITransactionCase, InvoiceCaseMixin):
         with self._create_test_client(raise_server_exceptions=False) as test_client:
             response: Response = test_client.get(f"/invoices/{inv1.id}/download")
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+
+    def _create_invoicing_address(self):
+        """Return an invoicing address (a contact) of the authenticated partner."""
+        return self.env["res.partner"].create(
+            {
+                "name": "Invoicing Address",
+                "parent_id": self.partner.id,
+                "type": "invoice",
+            }
+        )
+
+    def test_search_invoices_on_invoicing_address(self):
+        """An invoice done on an invoicing address of the partner is visible."""
+        address = self._create_invoicing_address()
+        address_invoice = self._create_invoice(
+            address, self.product, account=self.account_receivable, validate=True
+        )
+        # an invoice of another partner must stay invisible
+        self._create_invoice(
+            self.other_partner,
+            self.product,
+            account=self.account_receivable,
+            validate=True,
+        )
+        with self._create_test_client() as test_client:
+            response: Response = test_client.get("/invoices")
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        data = response.json()
+        self.assertEqual(data["count"], 1)
+        self.assertEqual(data["items"][0]["id"], address_invoice.id)
+
+    def test_get_invoices_on_invoicing_address(self):
+        """GET /invoices/{id} works for an invoice done on an address."""
+        address = self._create_invoicing_address()
+        address_invoice = self._create_invoice(
+            address, self.product, account=self.account_receivable, validate=True
+        )
+        with self._create_test_client() as test_client:
+            response: Response = test_client.get(f"/invoices/{address_invoice.id}")
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.json()["id"], address_invoice.id)
+
+    def test_get_invoices_on_other_partner_address(self):
+        """An invoice done on an address of another partner is not visible."""
+        other_address = self.env["res.partner"].create(
+            {
+                "name": "Other Invoicing Address",
+                "parent_id": self.other_partner.id,
+                "type": "invoice",
+            }
+        )
+        other_invoice = self._create_invoice(
+            other_address, self.product, account=self.account_receivable, validate=True
+        )
+        with self._create_test_client(raise_server_exceptions=False) as test_client:
+            response: Response = test_client.get(f"/invoices/{other_invoice.id}")
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)

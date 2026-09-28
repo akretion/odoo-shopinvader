@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!-- Copyright 2026 Akretion (http://www.akretion.com).
+     @author Benoît Guillot <benoit.guillot@akretion.com>
+     License AGPL-3.0 or later (http://www.gnu.org/licenses/agpl). -->
+<odoo>
+    <record id="view_partner_tree_shopinvader_address_disabled" model="ir.ui.view">
+        <field name="model">res.partner</field>
+        <field name="inherit_id" ref="base.view_partner_tree" />
+        <field name="arch" type="xml">
+            <field name="email" position="after">
+                <field name="shopinvader_address_disabled" optional="hide" />
+            </field>
+        </field>
+    </record>
+</odoo>

@@ -35,8 +35,10 @@ class InvoiceHelper(VirtualModel):
     partner = fields.Many2one("res.partner", required=True)
 
     def _domain(self):
+        # the invoice can be addressed to the partner itself or to one of its
+        # addresses (a contact of type 'invoice'), see shopinvader_address
         return [
-            ("partner_id", "=", self.partner.id),
+            ("partner_id", "child_of", self.partner.id),
             ("move_type", "in", ("out_invoice", "out_refund")),
             ("state", "not in", ("cancel", "draft")),
         ]

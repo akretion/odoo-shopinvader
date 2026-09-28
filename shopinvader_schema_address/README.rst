@@ -1,7 +1,3 @@
-.. image:: https://odoo-community.org/readme-banner-image
-   :target: https://odoo-community.org/get-involved?utm_source=readme
-   :alt: Odoo Community Association
-
 ==========================
 Shopinvader Schema Address
 ==========================
@@ -17,7 +13,7 @@ Shopinvader Schema Address
 .. |badge1| image:: https://img.shields.io/badge/maturity-Beta-yellow.png
     :target: https://odoo-community.org/page/development-status
     :alt: Beta
-.. |badge2| image:: https://img.shields.io/badge/license-AGPL--3-blue.png
+.. |badge2| image:: https://img.shields.io/badge/licence-AGPL--3-blue.png
     :target: http://www.gnu.org/licenses/agpl-3.0-standalone.html
     :alt: License: AGPL-3
 .. |badge3| image:: https://img.shields.io/badge/github-shopinvader%2Fodoo--shopinvader-lightgray.png?logo=github
@@ -30,6 +26,11 @@ This addon adds pydantic schemas that represents Addresses. It
 introduces InvoicingAddress and DeliveryAddress as sub classes of
 Address. It has been designed and thought to be used in shopinvader
 services.
+
+Every address exposes the ``vat`` of the customer account it belongs to
+(the vat is a commercial field: all the addresses of an account share
+the same vat) and a ``vat_readonly`` flag, set as soon as the account
+has a confirmed sale order.
 
 **Table of contents**
 

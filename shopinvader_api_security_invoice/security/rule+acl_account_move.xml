@@ -16,7 +16,7 @@
         <field name="name">shopinvader user can only access its own invoices</field>
         <field name="model_id" ref="account.model_account_move" />
         <field name="domain_force">[
-            ('partner_id', '=', authenticated_partner_id)
+            ('partner_id', 'child_of', authenticated_partner_id)
         ]
         </field>
         <field

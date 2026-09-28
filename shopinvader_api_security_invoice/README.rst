@@ -1,7 +1,3 @@
-.. image:: https://odoo-community.org/readme-banner-image
-   :target: https://odoo-community.org/get-involved?utm_source=readme
-   :alt: Odoo Community Association
-
 ================================
 Shopinvader Api Security invoice
 ================================
@@ -17,7 +13,7 @@ Shopinvader Api Security invoice
 .. |badge1| image:: https://img.shields.io/badge/maturity-Alpha-red.png
     :target: https://odoo-community.org/page/development-status
     :alt: Alpha
-.. |badge2| image:: https://img.shields.io/badge/license-AGPL--3-blue.png
+.. |badge2| image:: https://img.shields.io/badge/licence-AGPL--3-blue.png
     :target: http://www.gnu.org/licenses/agpl-3.0-standalone.html
     :alt: License: AGPL-3
 .. |badge3| image:: https://img.shields.io/badge/github-shopinvader%2Fodoo--shopinvader-lightgray.png?logo=github
@@ -27,6 +23,11 @@ Shopinvader Api Security invoice
 |badge1| |badge2| |badge3|
 
 Security rule for exposing invoices on shopinvader_api
+
+The invoices of the authenticated partner and of its addresses (the
+contacts used as invoicing addresses, see ``shopinvader_address``) are
+exposed to the API user: the domain of the rules uses ``child_of`` on
+the partner of the invoice.
 
 .. IMPORTANT::
    This is an alpha version, the data model and design can change at any time without warning.

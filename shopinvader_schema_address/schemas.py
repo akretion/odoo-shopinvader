@@ -20,6 +20,11 @@ class Address(StrictExtendableBaseModel):
     country_id: int | None = None
     company_type: typing.Literal["person", "company"] | None
     title_id: int | None = None
+    # the vat is a commercial field: it belongs to the customer account and is
+    # therefore the same for all its addresses
+    # (see _get_shopinvader_vat_owner)
+    vat: str | None = None
+    vat_readonly: bool = False
 
     @classmethod
     def from_res_partner(cls, odoo_rec):
@@ -37,6 +42,10 @@ class Address(StrictExtendableBaseModel):
             country_id=odoo_rec.country_id.id or None,
             company_type=odoo_rec.company_type or None,
             title_id=odoo_rec.title.id or None,
+            vat=odoo_rec._get_shopinvader_vat_owner().vat or None,
+            # the vat can not be changed anymore once the account has been used
+            # on a confirmed sale order
+            vat_readonly=odoo_rec._is_shopinvader_vat_readonly(),
         )
 
 
@@ -44,15 +53,6 @@ class InvoicingAddress(Address):
     """
     Invoicing Address
     """
-
-    vat: str | None = None
-
-    @classmethod
-    def from_res_partner(cls, odoo_rec):
-        res = super().from_res_partner(odoo_rec)
-        res.vat = odoo_rec.vat or None
-
-        return res
 
 
 class DeliveryAddress(Address):
