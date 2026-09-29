@@ -154,18 +154,18 @@ class SaleOrder(models.Model):
             exception = None
             if not rec.use_customer_quotation_workflow:
                 exception = UserError(
-                    _("Customer quotation workflow is not enabled for this order.")
+                    self.env._("Customer quotation workflow is not enabled for this order.")
                 )
             elif action not in self._customer_actions_by_quotation_state.get(
                 rec.quotation_state, []
             ):
                 expected_states = []
                 for (
-                    quotation_sate,
+                    quotation_state,
                     actions,
                 ) in self._customer_actions_by_quotation_state.items():
                     if action in actions:
-                        expected_states.append(quotation_sate)
+                        expected_states.append(quotation_state)
                 exception = InvalidQuotationStateError(
                     self.env,
                     action=action,
@@ -185,7 +185,8 @@ class SaleOrder(models.Model):
 
     def action_customer_accept_quotation(self):
         self._check_customer_action_allowed("accept_quotation")
-        return self.action_confirm()
+        customer_quotations = self.filtered("use_customer_quotation_workflow")
+        return customer_quotations.write({"quotation_state": "accepted", "typology": "sale"})
 
     def action_customer_reset_quotation_to_draft(self):
         self._check_customer_action_allowed("reset_to_draft")
