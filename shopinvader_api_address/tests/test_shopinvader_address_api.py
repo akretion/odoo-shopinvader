@@ -241,6 +241,110 @@ class TestShopinvaderAddressApi(FastAPITransactionCase):
         self.assertEqual(address.get("vat"), "BE0477472701")
         self.assertEqual(address.get("vat"), self.test_partner.vat)
 
+    def test_update_address_company_type(self):
+        """
+        Test to update the company type of a delivery contact
+        """
+        address = self.env["res.partner"].create(
+            {
+                "name": "test New Addr",
+                "street": "test Street",
+                "zip": "5000",
+                "city": "Namur",
+                "country_id": self.env.ref("base.be").id,
+                "parent_id": self.test_partner.id,
+                "type": "delivery",
+            }
+        )
+        self.assertEqual(self.test_partner.company_type, "person")
+        self.assertEqual(address.company_type, "person")
+
+        data = {"company_type": "company"}
+        with self._create_test_client(router=address_router) as test_client:
+            response: Response = test_client.post(
+                f"/addresses/delivery/{address.id}", json=data
+            )
+
+        self.assertEqual(
+            response.status_code,
+            status.HTTP_200_OK,
+            msg=f"error message: {response.text}",
+        )
+        # the company type belongs to the account: the contact is still a person
+        self.assertEqual(self.test_partner.company_type, "company")
+        self.assertTrue(self.test_partner.is_company)
+        self.assertEqual(address.company_type, "person")
+        self.assertFalse(address.is_company)
+
+    def test_update_invoicing_address_company_type(self):
+        """
+        Test to update the company type from an invoicing address
+        """
+        contact = self.env["res.partner"].create(
+            {
+                "name": "Service comptabilite",
+                "parent_id": self.test_partner.id,
+                "type": "invoice",
+            }
+        )
+
+        data = {"company_type": "company"}
+        with self._create_test_client(router=address_router) as test_client:
+            response: Response = test_client.post(
+                f"/addresses/invoicing/{contact.id}", json=data
+            )
+
+        self.assertEqual(
+            response.status_code,
+            status.HTTP_200_OK,
+            msg=f"error message: {response.text}",
+        )
+        self.assertEqual(self.test_partner.company_type, "company")
+        self.assertEqual(contact.company_type, "person")
+        self.assertFalse(contact.is_company)
+
+        # the account itself, used as invoicing address, can be updated too
+        data = {"company_type": "person"}
+        with self._create_test_client(router=address_router) as test_client:
+            response: Response = test_client.post(
+                f"/addresses/invoicing/{self.test_partner.id}", json=data
+            )
+
+        self.assertEqual(
+            response.status_code,
+            status.HTTP_200_OK,
+            msg=f"error message: {response.text}",
+        )
+        self.assertEqual(self.test_partner.company_type, "person")
+        self.assertFalse(self.test_partner.is_company)
+
+    def test_create_delivery_address_company_type(self):
+        """
+        Test to create a delivery address with a company type
+        """
+        data = {
+            "name": "test Addr",
+            "street": "test Street",
+            "zip": "5000",
+            "city": "Namur",
+            "country_id": self.env.ref("base.be").id,
+            "company_type": "company",
+        }
+
+        with self._create_test_client(router=address_router) as test_client:
+            response: Response = test_client.post("/addresses/delivery", json=data)
+
+        self.assertEqual(
+            response.status_code,
+            status.HTTP_201_CREATED,
+            msg=f"error message: {response.text}",
+        )
+        new_address = self.env["res.partner"].browse(response.json()["id"])
+        # the company type is set on the account, the new contact is a person
+        self.assertEqual(self.test_partner.company_type, "company")
+        self.assertEqual(new_address.company_type, "person")
+        self.assertFalse(new_address.is_company)
+
     def test_get_address_vat(self):
         """
         The vat of every address is the vat of the customer account
@@ -562,6 +666,27 @@ class TestShopinvaderAddressReplacementApi(FastAPITransactionCase):
         self.assertEqual(cart.partner_shipping_id, new_address)
         # only the new address is exposed by the API
         self.assertEqual(self._address_ids("delivery"), [new_address.id])
+
+    def test_replace_address_company_type(self):
+        """A company type sent on an address used on a confirmed order is
+        written on the account, the new address is a person."""
+        address = self._create_address("delivery")
+        self._use_address_on_sale_order("delivery", address)
+
+        response = self._post(
+            f"/addresses/delivery/{address.id}", {"company_type": "company"}
+        )
+
+        self.assertEqual(
+            response.status_code,
+            status.HTTP_200_OK,
+            msg=f"error message: {response.text}",
+        )
+        new_address = self.env["res.partner"].browse(response.json()["id"])
+        self.assertNotEqual(new_address, address)
+        self.assertEqual(self.customer.company_type, "company")
+        self.assertEqual(new_address.company_type, "person")
+        self.assertFalse(new_address.is_company)
 
     def test_update_delivery_address_main_partner_used(self):
         """The address to update is the partner itself: it is flagged and a

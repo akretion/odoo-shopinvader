@@ -24,7 +24,8 @@ class Address(StrictExtendableBaseModel):
     # therefore the same for all its addresses
     # (see _get_shopinvader_vat_owner)
     vat: str | None = None
-    vat_readonly: bool = False
+    vat_readonly: bool | None = False
+    main: bool | None = False
 
     @classmethod
     def from_res_partner(cls, odoo_rec):
@@ -46,6 +47,7 @@ class Address(StrictExtendableBaseModel):
             # the vat can not be changed anymore once the account has been used
             # on a confirmed sale order
             vat_readonly=odoo_rec._is_shopinvader_vat_readonly(),
+            main=odoo_rec.main_shopinvader_address,
         )
 
 

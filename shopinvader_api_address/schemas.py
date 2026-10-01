@@ -1,6 +1,8 @@
 # Copyright 2023 ACSONE SA/NV
 # License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl).
 
+import typing
+
 from extendable_pydantic import StrictExtendableBaseModel
 
 
@@ -21,6 +23,7 @@ class AddressCreate(StrictExtendableBaseModel, extra="ignore"):
     state_id: int | None = None
     country_id: int | None = None
     title_id: int | None = None
+    company_type: typing.Literal["person", "company"] | None = None
 
     def to_res_partner_vals(self) -> dict:
         vals = {
@@ -35,6 +38,7 @@ class AddressCreate(StrictExtendableBaseModel, extra="ignore"):
             "state_id": self.state_id,
             "country_id": self.country_id,
             "title": self.title_id,
+            "company_type": self.company_type,
         }
 
         return vals
@@ -57,6 +61,7 @@ class AddressUpdate(StrictExtendableBaseModel, extra="ignore"):
     state_id: int | None = None
     country_id: int | None = None
     title_id: int | None = None
+    company_type: typing.Literal["person", "company"] | None = None
 
     def to_res_partner_vals(self) -> dict:
         fields = [
@@ -70,6 +75,7 @@ class AddressUpdate(StrictExtendableBaseModel, extra="ignore"):
             "email",
             "state_id",
             "country_id",
+            "company_type",
         ]
         values = self.model_dump(exclude_unset=True)
         result = {f: values[f] for f in fields if f in values}
