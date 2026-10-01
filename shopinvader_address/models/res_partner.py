@@ -19,6 +19,7 @@ SHOPINVADER_ADDRESS_FIELDS = (
     "phone",
     "mobile",
     "email",
+    "main_shopinvader_address",
 )
 
 SHOPINVADER_INVOICING_ADDRESS_FIELDS = SHOPINVADER_ADDRESS_FIELDS + ("vat",)
@@ -36,6 +37,13 @@ SHOPINVADER_ADDRESS_OPEN_STATES = ("draft",)
 # sale.order states where the address (and its fiscal data) is frozen
 SHOPINVADER_ADDRESS_CONFIRMED_STATES = ("sale", "done")
 
+# Fields that always belong to the customer account, never to one of its
+# addresses: an address of an account may be a contact, and a contact is always
+# a person. They are written on the account (see
+# ``_sync_shopinvader_customer_vals``) and removed from the vals used to write
+# or create the address (see ``_prepare_shopinvader_address_vals``).
+SHOPINVADER_ADDRESS_ACCOUNT_FIELDS = ("company_type",)
+
 
 class ResPartner(models.Model):
     _inherit = "res.partner"
@@ -47,6 +55,7 @@ class ResPartner(models.Model):
         "kept for the history. A contact is archived instead, but the main "
         "partner of an account cannot be archived, hence this flag.",
     )
+    main_shopinvader_address = fields.Boolean(copy=False)
 
     # ------------------------------------------------------------------
     # Helpers
@@ -67,7 +76,7 @@ class ResPartner(models.Model):
         ]
         return bool(self.env["sale.order"].sudo().search(domain, limit=1))
 
-    def _get_shopinvader_vat_owner(self) -> "ResPartner":
+    def _get_shopinvader_commercial_fields_owner(self) -> "ResPartner":
         """Return the partner owning the vat of the address.
 
         The vat is a *commercial field*: it always belongs to the commercial
@@ -78,17 +87,17 @@ class ResPartner(models.Model):
         self.ensure_one()
         return self.commercial_partner_id
 
-    def _is_shopinvader_vat_readonly(self) -> bool:
+    def _is_shopinvader_commercial_partner_already_used(self) -> bool:
         """Check if the vat of the address can still be modified.
 
         The vat is shared by all the addresses of an account (see
-        ``_get_shopinvader_vat_owner``), so the check is done on the account
+        ``_get_shopinvader_commercial_fields_owner``), so the check is done on the account
         itself: as soon as it has a confirmed sale order, the vat can not be
         changed anymore, the confirmed orders must keep the fiscal data they
         have been validated with.
         """
         self.ensure_one()
-        owner = self._get_shopinvader_vat_owner()
+        owner = self._get_shopinvader_commercial_fields_owner()
         domain = [
             ("partner_id", "=", owner.id),
             ("state", "in", SHOPINVADER_ADDRESS_CONFIRMED_STATES),
@@ -166,6 +175,7 @@ class ResPartner(models.Model):
             address.active = False
         else:
             address.shopinvader_address_disabled = True
+            address.main_shopinvader_address = False
 
     def _reassign_shopinvader_address(self, old_address, new_address, address_type):
         """Re-assign ``old_address`` to ``new_address`` on the open documents.
@@ -220,20 +230,6 @@ class ResPartner(models.Model):
         self.ensure_one()
         return self._is_shopinvader_address_used("invoicing")
 
-    def _ensure_shopinvader_invoicing_address_not_used(self) -> None:
-        """
-        Check if Invoicing Address is used on confirmed sale order
-        """
-        self.ensure_one()
-        if self._is_shopinvader_invoicing_address_used():
-            raise UserError(
-                self.env._(
-                    "Can not update invoicing addresses(%(address_id)d)"
-                    "because it is already used on confirmed sale order",
-                    address_id=self.id,
-                )
-            )
-
     def _get_shopinvader_invoicing_addresses(self) -> "ResPartner":
         self.ensure_one()
         # the main partner is the invoicing address of the account, as long as
@@ -274,15 +270,16 @@ class ResPartner(models.Model):
         The invoicing address used to be the authenticated partner itself.
         """
         self.ensure_one()
-        # the vat can not be stored on the contact itself (see
-        # _sync_shopinvader_customer_vals)
+        # the vat and the company type can not be stored on the contact itself
+        # (see _sync_shopinvader_customer_vals)
         self._sync_shopinvader_customer_vals(vals)
+        vals = self._prepare_shopinvader_address_vals(vals)
         vals = dict(vals, parent_id=self.id, type="invoice")
         self.env["res.partner"].check_access("create")
         return self.env["res.partner"].sudo().create(vals)
 
     def _sync_shopinvader_customer_vals(self, vals) -> None:
-        """Keep the customer account in sync with its invoicing address.
+        """Keep the customer account in sync with the data sent by the customer.
 
         The vat is a *commercial field* in Odoo: it belongs to the commercial
         entity (the customer account) and Odoo always synchronizes it on the
@@ -290,20 +287,48 @@ class ResPartner(models.Model):
         It is also the one used to compute the fiscal position of the new sale
         orders (see ``_get_fiscal_position`` in ``account``), so it must be
         written on the account: an invoicing contact can not carry its own vat.
+
+        The company type is not a commercial field: Odoo never synchronizes it
+        on the children and it can be set on any partner, contact included. It
+        drives the eInvoicing of the account, so it is written on the account
+        too: an address of the account is always a person.
         """
         self.ensure_one()
-        if vals.get("vat"):
-            self.write({"vat": vals["vat"]})
+        account_vals = {
+            field_name: vals[field_name]
+            for field_name in ("vat", "company_type")
+            if vals.get(field_name)
+        }
+        if account_vals:
+            self.write(account_vals)
+
+    def _prepare_shopinvader_address_vals(self, vals) -> dict:
+        """Return the vals that can be written on an address.
+
+        The fields of ``SHOPINVADER_ADDRESS_ACCOUNT_FIELDS`` belong to the
+        customer account (see ``_sync_shopinvader_customer_vals``): they are
+        dropped here since the address may be a contact of the account.
+        """
+        return {
+            field_name: value
+            for field_name, value in vals.items()
+            if field_name not in SHOPINVADER_ADDRESS_ACCOUNT_FIELDS
+        }
 
     def _update_shopinvader_invoicing_address(
         self, vals: dict, address: "ResPartner"
     ) -> "ResPartner":
         self.ensure_one()
         self._sync_shopinvader_customer_vals(vals)
+        vals = self._prepare_shopinvader_address_vals(vals)
         if address._is_shopinvader_invoicing_address_used():
             # the address is used on a confirmed sale order: it can not be
             # updated, a new one takes its place
             return self._replace_shopinvader_address("invoicing", address, vals)
+
+        # Set address as main at the first update of the parent address
+        if not address.main_shopinvader_address and not address.parent_id:
+            vals["main_shopinvader_address"] = True
 
         # update_address
         address.write(vals)
@@ -340,20 +365,6 @@ class ResPartner(models.Model):
         self.ensure_one()
         return self._is_shopinvader_address_used("delivery")
 
-    def _ensure_shopinvader_delivery_address_not_used(self) -> None:
-        """
-        Check if Delivery Address is used on confirmed sale order
-        """
-        self.ensure_one()
-        if self._is_shopinvader_delivery_address_used():
-            raise UserError(
-                self.env._(
-                    "Can not delete Delivery address(%(address_id)d)"
-                    "because it is already used on confirmed sale order",
-                    address_id=self.id,
-                )
-            )
-
     def _get_shopinvader_delivery_addresses(self) -> "ResPartner":
         self.ensure_one()
         domain = [
@@ -385,6 +396,10 @@ class ResPartner(models.Model):
 
     def _create_shopinvader_delivery_address(self, vals: dict) -> "ResPartner":
         self.ensure_one()
+        # the vat and the company type can not be stored on the contact itself
+        # (see _sync_shopinvader_customer_vals)
+        self._sync_shopinvader_customer_vals(vals)
+        vals = self._prepare_shopinvader_address_vals(vals)
         vals = dict(vals, parent_id=self.id, type="delivery")
         return self.env["res.partner"].create(vals)
 
@@ -401,6 +416,11 @@ class ResPartner(models.Model):
             )
 
         self.ensure_one()
+
+        # the vat and the company type can not be stored on the contact itself
+        # (see _sync_shopinvader_customer_vals)
+        self._sync_shopinvader_customer_vals(vals)
+        vals = self._prepare_shopinvader_address_vals(vals)
 
         if address._is_shopinvader_delivery_address_used():
             # the address is used on a confirmed sale order: it can not be
