@@ -154,7 +154,7 @@ class SaleOrder(models.Model):
             exception = None
             if not rec.use_customer_quotation_workflow:
                 exception = UserError(
-                    _("Customer quotation workflow is not enabled for this order.")
+                    self.env._("Customer quotation workflow is not enabled for this order.")
                 )
             elif action not in self._customer_actions_by_quotation_state.get(
                 rec.quotation_state, []
