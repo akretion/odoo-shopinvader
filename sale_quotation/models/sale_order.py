@@ -185,6 +185,7 @@ class SaleOrder(models.Model):
 
     def action_customer_accept_quotation(self):
         self._check_customer_action_allowed("accept_quotation")
+        customer_quotations = self.filtered("use_customer_quotation_workflow")
         return customer_quotations.write({"quotation_state": "accepted", "typology": "sale"})
 
     def action_customer_reset_quotation_to_draft(self):
