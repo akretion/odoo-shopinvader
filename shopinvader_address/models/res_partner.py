@@ -3,6 +3,7 @@
 
 from odoo import fields, models
 from odoo.exceptions import MissingError, UserError
+from odoo.osv import expression
 
 # Fields copied from the replaced address when a new one is created. Computed
 # fields are skipped: they are derived from the copied ones (e.g. the name of
@@ -24,7 +25,18 @@ SHOPINVADER_ADDRESS_FIELDS = (
 
 SHOPINVADER_INVOICING_ADDRESS_FIELDS = SHOPINVADER_ADDRESS_FIELDS + ("vat",)
 
-# sale.order field holding the address, per Shopinvader address type
+# sale.order fields which can hold an address of a customer account. The
+# addresses of an account are interchangeable: an address can be used as the
+# customer, the invoicing address or the delivery address of a sale order,
+# whatever its Shopinvader type.
+SHOPINVADER_ADDRESS_SALE_FIELDS = (
+    "partner_id",
+    "partner_invoice_id",
+    "partner_shipping_id",
+)
+
+# sale.order field holding the address, per Shopinvader address type: used to
+# re-assign the address of the open documents when an address is replaced
 SHOPINVADER_ADDRESS_SALE_FIELD = {
     "invoicing": "partner_invoice_id",
     "delivery": "partner_shipping_id",
@@ -63,17 +75,30 @@ class ResPartner(models.Model):
     def _shopinvader_address_sale_field(self, address_type):
         return SHOPINVADER_ADDRESS_SALE_FIELD[address_type]
 
-    def _is_shopinvader_address_used(self, address_type) -> bool:
+    def _is_shopinvader_address_used(self) -> bool:
         """Check if the address is used on a confirmed sale order.
+
+        The addresses of an account are interchangeable: an address may be
+        used as the customer (``partner_id``), the invoicing address
+        (``partner_invoice_id``) or the delivery address
+        (``partner_shipping_id``) of a sale order, whatever its Shopinvader
+        type. The three fields are checked.
 
         Such a sale order must keep the address it has been validated with, so
         the address can then only be *replaced* by a new one.
         """
         self.ensure_one()
-        domain = [
-            (self._shopinvader_address_sale_field(address_type), "=", self.id),
-            ("state", "in", SHOPINVADER_ADDRESS_CONFIRMED_STATES),
-        ]
+        domain = expression.AND(
+            [
+                expression.OR(
+                    [
+                        [(field_name, "=", self.id)]
+                        for field_name in SHOPINVADER_ADDRESS_SALE_FIELDS
+                    ]
+                ),
+                [("state", "in", SHOPINVADER_ADDRESS_CONFIRMED_STATES)],
+            ]
+        )
         return bool(self.env["sale.order"].sudo().search(domain, limit=1))
 
     def _get_shopinvader_commercial_fields_owner(self) -> "ResPartner":
@@ -88,21 +113,22 @@ class ResPartner(models.Model):
         return self.commercial_partner_id
 
     def _is_shopinvader_commercial_partner_already_used(self) -> bool:
-        """Check if the vat of the address can still be modified.
+        """Check if the account (the main address) is used on a sale order.
 
-        The vat is shared by all the addresses of an account (see
-        ``_get_shopinvader_commercial_fields_owner``), so the check is done on the account
-        itself: as soon as it has a confirmed sale order, the vat can not be
-        changed anymore, the confirmed orders must keep the fiscal data they
-        have been validated with.
+        The vat and the company type are shared by all the addresses of an
+        account (see ``_get_shopinvader_commercial_fields_owner``), so the
+        check is done on the account itself: as soon as it is used on a
+        confirmed sale order - as the customer, the invoicing address or the
+        delivery address of the order (the addresses are interchangeable) -
+        its fiscal data can not be changed anymore, the confirmed orders must
+        keep the fiscal data they have been validated with.
+
+        It is exposed by the API through the ``already_used`` field of the
+        addresses.
         """
         self.ensure_one()
         owner = self._get_shopinvader_commercial_fields_owner()
-        domain = [
-            ("partner_id", "=", owner.id),
-            ("state", "in", SHOPINVADER_ADDRESS_CONFIRMED_STATES),
-        ]
-        return bool(self.env["sale.order"].sudo().search(domain, limit=1))
+        return owner._is_shopinvader_address_used()
 
     def _shopinvader_address_can_be_archived(self) -> bool:
         """Check if the address can be archived.
@@ -228,7 +254,7 @@ class ResPartner(models.Model):
     def _is_shopinvader_invoicing_address_used(self) -> bool:
         """Check if the invoicing address is used on a confirmed sale order"""
         self.ensure_one()
-        return self._is_shopinvader_address_used("invoicing")
+        return self._is_shopinvader_address_used()
 
     def _get_shopinvader_invoicing_addresses(self) -> "ResPartner":
         self.ensure_one()
@@ -292,13 +318,19 @@ class ResPartner(models.Model):
         on the children and it can be set on any partner, contact included. It
         drives the eInvoicing of the account, so it is written on the account
         too: an address of the account is always a person.
+
+        Once the account is used on a confirmed sale order (``already_used``),
+        the commercial fields are not written anymore: the API may send it by mistake
+        and the confirmed orders must keep the identity they have been
+        validated with.
         """
         self.ensure_one()
-        account_vals = {
-            field_name: vals[field_name]
-            for field_name in ("vat", "company_type")
-            if vals.get(field_name)
-        }
+        account_vals = {}
+        if not self._is_shopinvader_commercial_partner_already_used():
+            if vals.get("vat"):
+                account_vals["vat"] = vals["vat"]
+            if vals.get("company_type"):
+                account_vals["company_type"] = vals["company_type"]
         if account_vals:
             self.write(account_vals)
 
@@ -363,7 +395,7 @@ class ResPartner(models.Model):
     def _is_shopinvader_delivery_address_used(self) -> bool:
         """Check if the delivery address is used on a confirmed sale order"""
         self.ensure_one()
-        return self._is_shopinvader_address_used("delivery")
+        return self._is_shopinvader_address_used()
 
     def _get_shopinvader_delivery_addresses(self) -> "ResPartner":
         self.ensure_one()

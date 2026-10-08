@@ -117,8 +117,9 @@ class TestShopinvaderAddressEinvoicingCommon(FastAPITransactionCase):
 class TestShopinvaderAddressEinvoicingApi(TestShopinvaderAddressEinvoicingCommon):
     """The addresses exposed by the API expose the eInvoicing directory."""
 
-    def test_get_addresses_directory_lines(self):
-        """Every address of the account exposes the same directory lines."""
+    def test_get_addresses_company_identifier(self):
+        """Every address of the account exposes the same company identifier."""
+        self.customer.siret = "73282932000074"
         delivery_address = self._create_address("delivery")
         addresses = self._call("/addresses/invoicing") + self._call(
             "/addresses/delivery"
@@ -129,15 +130,9 @@ class TestShopinvaderAddressEinvoicingApi(TestShopinvaderAddressEinvoicingCommon
             sorted([self.customer.id, delivery_address.id]),
         )
         for address in addresses:
-            # the disabled line is hidden by the One2many, as in Odoo
-            self.assertEqual(
-                address["fr_directory_line_ids"],
-                [
-                    self._directory_line_payload(self.routing_code_line),
-                    self._directory_line_payload(self.siren_line),
-                ],
-            )
-            self.assertIsNone(address["default_fr_directory_line_id"])
+            # the company identifier is always the one of the account
+            self.assertEqual(address["company_identifier"], "73282932000074")
+            self.assertIsNone(address["einvoicing_directory_line"])
 
     def test_get_address_default_directory_line(self):
         """The line of the address wins, the one of the account is a fallback."""
@@ -147,20 +142,20 @@ class TestShopinvaderAddressEinvoicingApi(TestShopinvaderAddressEinvoicingCommon
         # a contact without its own line exposes the line of the account
         address = self._call(f"/addresses/invoicing/{contact.id}")
         self.assertEqual(
-            address["default_fr_directory_line_id"],
+            address["einvoicing_directory_line"],
             self._directory_line_payload(self.siren_line),
         )
         # the line of the contact itself wins
         contact.default_fr_directory_line_id = self.routing_code_line
         address = self._call(f"/addresses/invoicing/{contact.id}")
         self.assertEqual(
-            address["default_fr_directory_line_id"],
+            address["einvoicing_directory_line"],
             self._directory_line_payload(self.routing_code_line),
         )
         # the account exposes its own line
         address = self._call(f"/addresses/invoicing/{self.customer.id}")
         self.assertEqual(
-            address["default_fr_directory_line_id"],
+            address["einvoicing_directory_line"],
             self._directory_line_payload(self.siren_line),
         )
 
@@ -171,10 +166,10 @@ class TestShopinvaderAddressEinvoicingApi(TestShopinvaderAddressEinvoicingCommon
         address = self._call(
             f"/addresses/delivery/{delivery_address.id}",
             method="post",
-            json={"default_fr_directory_line_id": self.siren_line.id},
+            json={"einvoicing_directory_line": self.siren_line.id},
         )
         self.assertEqual(
-            address["default_fr_directory_line_id"],
+            address["einvoicing_directory_line"],
             self._directory_line_payload(self.siren_line),
         )
         self.assertEqual(delivery_address.default_fr_directory_line_id, self.siren_line)
@@ -183,16 +178,16 @@ class TestShopinvaderAddressEinvoicingApi(TestShopinvaderAddressEinvoicingCommon
         address = self._call(
             f"/addresses/delivery/{delivery_address.id}",
             method="post",
-            json={"default_fr_directory_line_id": None},
+            json={"einvoicing_directory_line": None},
         )
-        self.assertIsNone(address["default_fr_directory_line_id"])
+        self.assertIsNone(address["einvoicing_directory_line"])
         self.assertFalse(delivery_address.default_fr_directory_line_id)
 
         # the invoicing address (the account itself) can be updated as well
         self._call(
             f"/addresses/invoicing/{self.customer.id}",
             method="post",
-            json={"default_fr_directory_line_id": self.routing_code_line.id},
+            json={"einvoicing_directory_line": self.routing_code_line.id},
         )
         self.assertEqual(
             self.customer.default_fr_directory_line_id, self.routing_code_line
@@ -205,7 +200,7 @@ class TestShopinvaderAddressEinvoicingDirectorySync(
     """The customer can sync its directory from the site."""
 
     def test_sync_directory_lines(self):
-        """The vat is stored on the account and the directory lines returned."""
+        """The company identifier is stored on the account, the lines returned."""
         synced_partners = []
 
         def fake_sync_button(partner):
@@ -226,13 +221,15 @@ class TestShopinvaderAddressEinvoicingDirectorySync(
             directory_lines = self._call(
                 "/einvoicing/directory_lines",
                 method="post",
-                json={"vat": "FR 44 732829320"},
+                json={"company_identifier": "73282932000074"},
             )
 
         # the directory is always synced on the main partner (the account)
         self.assertEqual(synced_partners, [self.customer])
-        # the vat received from the customer has been written on the account
-        self.assertEqual(self.customer.vat, "FR44732829320")
+        # the company identifier received from the customer has been written
+        # on the account
+        self.assertEqual(self.customer.siret, "73282932000074")
+        self.assertEqual(self.customer.siren, "732829320")
         self.assertEqual(
             [directory_line["identifier"] for directory_line in directory_lines],
             ["0009", "123456789", "732829320"],
@@ -240,9 +237,9 @@ class TestShopinvaderAddressEinvoicingDirectorySync(
         self.assertEqual(directory_lines[1]["type"], "siret")
         self.assertEqual(directory_lines[1]["state"], "active")
 
-    def test_sync_directory_lines_without_vat(self):
-        """The directory can be synced without sending a vat number."""
-        self.customer.vat = "FR44732829320"
+    def test_sync_directory_lines_without_company_identifier(self):
+        """The directory can be synced without sending a company identifier."""
+        self.customer.siret = "73282932000074"
         synced_partners = []
 
         def fake_sync_button(partner):
@@ -258,19 +255,30 @@ class TestShopinvaderAddressEinvoicingDirectorySync(
             )
 
         self.assertEqual(synced_partners, [self.customer])
-        # the vat of the account is left untouched
-        self.assertEqual(self.customer.vat, "FR44732829320")
+        # the company identifier of the account is left untouched
+        self.assertEqual(self.customer.siret, "73282932000074")
         self.assertEqual(
             [directory_line["identifier"] for directory_line in directory_lines],
             ["0009", "732829320"],
         )
 
+    def test_sync_directory_lines_with_invalid_company_identifier(self):
+        """An invalid SIRET is refused by Odoo and returned as a 400 error."""
+        response = self._call(
+            "/einvoicing/directory_lines",
+            http_code=status.HTTP_400_BAD_REQUEST,
+            method="post",
+            json={"company_identifier": "12345678901234"},
+        )
+
+        self.assertIn("SIRET '12345678901234' is invalid.", response["detail"])
+
     def test_sync_directory_lines_from_a_contact(self):
         """The directory is always synced on the commercial entity.
 
-        The authenticated partner can be a contact of the account: the vat is
-        written on the account and the directory is queried with the data of
-        the account.
+        The authenticated partner can be a contact of the account: the company
+        identifier is written on the account and the directory is queried with
+        the data of the account.
         """
         contact = self._create_address("invoice")
         synced_partners = []
@@ -285,12 +293,12 @@ class TestShopinvaderAddressEinvoicingDirectorySync(
             directory_lines = self._call(
                 "/einvoicing/directory_lines",
                 method="post",
-                json={"vat": "FR44732829320"},
+                json={"company_identifier": "73282932000074"},
                 partner=contact,
             )
 
         self.assertEqual(synced_partners, [self.customer])
-        self.assertEqual(self.customer.vat, "FR44732829320")
+        self.assertEqual(self.customer.siret, "73282932000074")
         self.assertEqual(
             [directory_line["identifier"] for directory_line in directory_lines],
             ["0009", "732829320"],

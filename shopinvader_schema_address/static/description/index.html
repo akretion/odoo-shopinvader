@@ -376,8 +376,9 @@ Address. It has been designed and thought to be used in shopinvader
 services.</p>
 <p>Every address exposes the <tt class="docutils literal">vat</tt> of the customer account it belongs to
 (the vat is a commercial field: all the addresses of an account share
-the same vat) and a <tt class="docutils literal">vat_readonly</tt> flag, set as soon as the account
-has a confirmed sale order.</p>
+the same vat), an <tt class="docutils literal">already_used</tt> flag, set as soon as the account has
+a confirmed sale order, and a <tt class="docutils literal">main</tt> flag, set on the main address of
+the account.</p>
 <p><strong>Table of contents</strong></p>
 <div class="contents local topic" id="contents">
 <ul class="simple">

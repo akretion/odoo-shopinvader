@@ -38,7 +38,7 @@ class Address(StrictExtendableBaseModel):
             email=odoo_rec.email or None,
             state_id=odoo_rec.state_id.id or None,
             country_id=odoo_rec.country_id.id or None,
-            company_type=odoo_rec.company_type or None,
+            company_type=odoo_rec._get_shopinvader_commercial_fields_owner().company_type or None,
             title_id=odoo_rec.title.id or None,
             vat=odoo_rec._get_shopinvader_commercial_fields_owner().vat or None,
             # the vat can not be changed anymore once the account has been used
