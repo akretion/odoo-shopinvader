@@ -4,6 +4,6 @@ Address. It has been designed and thought to be used in shopinvader
 services.
 
 Every address exposes the ``vat`` of the customer account it belongs to (the
-vat is a commercial field: all the addresses of an account share the same vat)
-and a ``vat_readonly`` flag, set as soon as the account has a confirmed sale
-order.
+vat is a commercial field: all the addresses of an account share the same vat),
+an ``already_used`` flag, set as soon as the account has a confirmed sale order,
+and a ``main`` flag, set on the main address of the account.

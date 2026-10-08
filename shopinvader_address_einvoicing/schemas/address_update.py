@@ -15,12 +15,16 @@ class AddressUpdate(BaseAddressUpdate, extends=True):
     """
 
     einvoicing_directory_line: int | None = None
+    company_identifier: str | None = None
 
     def to_res_partner_vals(self) -> dict:
         vals = super().to_res_partner_vals()
         values = self.model_dump(
-            exclude_unset=True, include=["einvoicing_directory_line"]
+            exclude_unset=True,
+            include=["einvoicing_directory_line", "company_identifier"],
         )
         if "einvoicing_directory_line" in values:
             vals["default_fr_directory_line_id"] = values["einvoicing_directory_line"]
+        if "company_identifier" in values:
+            vals["siret"] = values["company_identifier"]
         return vals

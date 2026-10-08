@@ -40,8 +40,9 @@ class DirectoryLine(StrictExtendableBaseModel):
 class DirectoryLineSyncInput(StrictExtendableBaseModel, extra="ignore"):
     """Payload used to sync the directory of the customer.
 
-    The vat is written on the account before the sync since the directory is
-    queried with the data stored on the account.
+    The company identifier (the SIRET of the account) is written on the account
+    before the sync since the directory is queried with the data stored on the
+    account.
     """
 
-    vat: str | None = None
+    company_identifier: str | None = None

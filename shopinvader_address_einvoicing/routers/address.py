@@ -48,8 +48,8 @@ def sync_address_directory_lines(
 ) -> list[DirectoryLine]:
     """Sync the French eInvoicing directory of the customer.
 
-    Called by the front end when the customer sets its vat number: the vat is
-    written on the account, the directory is queried and the directory lines
-    which can be used as default line are returned.
+    Called by the front end when the customer sets its company identifier: the
+    SIRET is written on the account, the directory is queried and the directory
+    lines which can be used as default line are returned.
     """
     return helper._sync_fr_directory_lines(data.company_identifier)

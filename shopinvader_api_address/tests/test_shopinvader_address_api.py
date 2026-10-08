@@ -391,11 +391,12 @@ class TestShopinvaderAddressApi(FastAPITransactionCase):
             # the vat is a commercial field of the account: it is the same for
             # all the addresses of the account
             self.assertEqual(address["vat"], "BE0477472701")
-            self.assertFalse(address["vat_readonly"])
+            self.assertFalse(address["already_used"])
 
-    def test_get_address_vat_readonly(self):
+    def test_get_address_already_used(self):
         """
-        The vat is readonly as soon as the account has a confirmed sale order
+        The account is flagged as already used as soon as it has a confirmed
+        sale order
         """
         self.test_partner.vat = "BE0477472701"
         delivery_address = self.env["res.partner"].create(
@@ -415,9 +416,9 @@ class TestShopinvaderAddressApi(FastAPITransactionCase):
                 f"/addresses/delivery/{delivery_address.id}"
             )
 
-        # a draft sale order (cart, quotation) does not freeze the vat
-        self.assertFalse(response.json()["vat_readonly"])
-        self.assertFalse(delivery_response.json()["vat_readonly"])
+        # a draft sale order (cart, quotation) does not flag the account
+        self.assertFalse(response.json()["already_used"])
+        self.assertFalse(delivery_response.json()["already_used"])
 
         order.write({"state": "sale"})
 
@@ -431,7 +432,7 @@ class TestShopinvaderAddressApi(FastAPITransactionCase):
 
         for address in (response.json(), delivery_response.json()):
             self.assertEqual(address["vat"], "BE0477472701")
-            self.assertTrue(address["vat_readonly"])
+            self.assertTrue(address["already_used"])
 
     def test_create_delivery_address(self):
         """
@@ -562,19 +563,35 @@ class TestShopinvaderAddressReplacementApi(FastAPITransactionCase):
             dict(vals, parent_id=self.customer.id, type=address_type)
         )
 
-    def _use_address_on_sale_order(self, address_type, address):
+    def _use_address_on_sale_order(
+        self, address_type, address, sale_field=None, other_address=None
+    ):
         """Put the address on a confirmed sale order.
 
         Only the state of the sale order matters for the checks under test, so
         the order is not really validated (no line, no tax computation).
+
+        ``sale_field`` allows to use the address in another field than the one
+        of its type: the addresses of an account are interchangeable.
+
+        Writing one of the two address fields of a sale order also sets the
+        other one: ``other_address`` is written on the other field, so that the
+        address is used in a single field.
         """
-        field_name = (
+        field_name = sale_field or (
             "partner_invoice_id"
             if address_type == "invoicing"
             else "partner_shipping_id"
         )
         order = self.env["sale.order"].create({"partner_id": self.customer.id})
         order.write({field_name: address.id})
+        if other_address:
+            other_fields = [
+                field
+                for field in ("partner_invoice_id", "partner_shipping_id")
+                if field != field_name
+            ]
+            order.write({field: other_address.id for field in other_fields})
         order.write({"state": "sale"})
         return order
 
@@ -667,9 +684,98 @@ class TestShopinvaderAddressReplacementApi(FastAPITransactionCase):
         # only the new address is exposed by the API
         self.assertEqual(self._address_ids("delivery"), [new_address.id])
 
+    def test_update_delivery_address_used_as_invoicing_address(self):
+        """The addresses of an account are interchangeable: a delivery address
+        used as the invoicing address of a confirmed order is replaced too."""
+        address = self._create_address("delivery", street="Ancienne rue")
+        order = self._use_address_on_sale_order(
+            "delivery",
+            address,
+            sale_field="partner_invoice_id",
+            other_address=self.customer,
+        )
+
+        response = self._post(
+            f"/addresses/delivery/{address.id}", {"street": "Nouvelle rue"}
+        )
+
+        self.assertEqual(
+            response.status_code,
+            status.HTTP_200_OK,
+            msg=f"error message: {response.text}",
+        )
+        new_address = self.env["res.partner"].browse(response.json()["id"])
+        self.assertNotEqual(new_address, address)
+        self.assertEqual(new_address.street, "Nouvelle rue")
+        # the address is used as the invoicing address only
+        self.assertEqual(order.partner_invoice_id, address)
+        self.assertEqual(order.partner_shipping_id, self.customer)
+        self.assertFalse(address.active)
+        self.assertEqual(self._address_ids("delivery"), [new_address.id])
+
+    def test_update_delivery_address_used_as_customer(self):
+        """A delivery address used as the customer of a confirmed order is
+        replaced too."""
+        address = self._create_address("delivery", street="Ancienne rue")
+        order = self._use_address_on_sale_order(
+            "delivery",
+            address,
+            sale_field="partner_id",
+            other_address=self.customer,
+        )
+
+        response = self._post(
+            f"/addresses/delivery/{address.id}", {"street": "Nouvelle rue"}
+        )
+
+        self.assertEqual(
+            response.status_code,
+            status.HTTP_200_OK,
+            msg=f"error message: {response.text}",
+        )
+        new_address = self.env["res.partner"].browse(response.json()["id"])
+        self.assertNotEqual(new_address, address)
+        # the address is used as the customer of the order only
+        self.assertEqual(order.partner_id, address)
+        self.assertEqual(order.partner_invoice_id, self.customer)
+        self.assertEqual(order.partner_shipping_id, self.customer)
+        self.assertFalse(address.active)
+        self.assertEqual(self._address_ids("delivery"), [new_address.id])
+
+    def test_update_invoicing_address_used_as_delivery_address(self):
+        """An invoicing address used as the delivery address of a confirmed
+        order is replaced too."""
+        contact = self._create_address("invoice", street="Ancienne rue")
+        order = self._use_address_on_sale_order(
+            "invoicing",
+            contact,
+            sale_field="partner_shipping_id",
+            other_address=self.customer,
+        )
+
+        response = self._post(
+            f"/addresses/invoicing/{contact.id}", {"street": "Nouvelle rue"}
+        )
+
+        self.assertEqual(
+            response.status_code,
+            status.HTTP_200_OK,
+            msg=f"error message: {response.text}",
+        )
+        new_address = self.env["res.partner"].browse(response.json()["id"])
+        self.assertNotEqual(new_address, contact)
+        self.assertEqual(new_address.street, "Nouvelle rue")
+        # the address is used as the delivery address only
+        self.assertEqual(order.partner_shipping_id, contact)
+        self.assertEqual(order.partner_invoice_id, self.customer)
+        self.assertFalse(contact.active)
+        invoicing_addresses = self._address_ids("invoicing")
+        self.assertIn(new_address.id, invoicing_addresses)
+        self.assertNotIn(contact.id, invoicing_addresses)
+
     def test_replace_address_company_type(self):
         """A company type sent on an address used on a confirmed order is
-        written on the account, the new address is a person."""
+        ignored: the account keeps the identity of its confirmed orders."""
         address = self._create_address("delivery")
         self._use_address_on_sale_order("delivery", address)
 
@@ -684,9 +790,29 @@ class TestShopinvaderAddressReplacementApi(FastAPITransactionCase):
         )
         new_address = self.env["res.partner"].browse(response.json()["id"])
         self.assertNotEqual(new_address, address)
-        self.assertEqual(self.customer.company_type, "company")
+        # the account is already used: the company type is not written anymore
+        self.assertEqual(self.customer.company_type, "person")
+        self.assertFalse(self.customer.is_company)
         self.assertEqual(new_address.company_type, "person")
         self.assertFalse(new_address.is_company)
+
+    def test_create_address_company_type_ignored_when_account_used(self):
+        """A company type sent while creating an address of an account already
+        used on a confirmed order is ignored."""
+        self._use_address_on_sale_order("delivery", self.customer)
+        data = {"name": "Contact", "street": "Nouvelle rue", "company_type": "company"}
+
+        response = self._post("/addresses/delivery", data)
+
+        self.assertEqual(
+            response.status_code,
+            status.HTTP_201_CREATED,
+            msg=f"error message: {response.text}",
+        )
+        new_address = self.env["res.partner"].browse(response.json()["id"])
+        self.assertEqual(self.customer.company_type, "person")
+        self.assertFalse(self.customer.is_company)
+        self.assertEqual(new_address.company_type, "person")
 
     def test_update_delivery_address_main_partner_used(self):
         """The address to update is the partner itself: it is flagged and a

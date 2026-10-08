@@ -23,10 +23,11 @@ are not written on the address: the address is replaced by a new one (see
 belongs to the customer account and is written on it.*
 
 *Remark: the vat exposed by the API is always the vat of the customer account
-(`_get_shopinvader_vat_owner`): all the addresses of an account share the same
-vat. The API flags it as readonly (`vat_readonly`) as soon as the account has a
-confirmed sale order (`_is_shopinvader_vat_readonly`): the confirmed sale
-orders must keep the fiscal data they have been validated with.*
+(`_get_shopinvader_commercial_fields_owner`): all the addresses of an account
+share the same vat. The API flags the account as used (`already_used`) as soon
+as it has a confirmed sale order
+(`_is_shopinvader_commercial_partner_already_used`): the confirmed sale orders
+must keep the fiscal data they have been validated with.*
 
 DeliveryAddress  
 In the context of shopinvader, a `DeliveryAddress` corresponds to any
