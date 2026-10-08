@@ -17,6 +17,7 @@ class Address(BaseAddress, extends=True):
     """
 
     einvoicing_directory_line: DirectoryLine | None = None
+    company_identifier: str | None = None
 
     @classmethod
     def from_res_partner(cls, odoo_rec):
@@ -24,4 +25,5 @@ class Address(BaseAddress, extends=True):
         res.einvoicing_directory_line = DirectoryLine.from_fr_directory_line(
             odoo_rec._get_shopinvader_default_fr_directory_line()
         )
+        res.company_identifier = odoo_rec.commercial_partner_id.siret
         return res

@@ -32,19 +32,20 @@ class ResPartner(models.Model):
             or self.commercial_partner_id.default_fr_directory_line_id
         )
 
-    def _sync_shopinvader_fr_directory(self, vat=None):
+    def _sync_shopinvader_fr_directory(self, company_identifier=None):
         """Sync the eInvoicing directory of the account and return its lines.
 
         The directory is queried with the data of the account (the commercial
-        entity), so the vat received from the customer is written on the
+        entity), so the company_identifier received from the customer is written on the
         account before the sync when it has been changed.
         """
         self.ensure_one()
         partner = self.commercial_partner_id
-        if vat:
-            # the vat is a commercial field: it always belongs to the account
-            vat = "".join(vat.split()).upper()
-            if partner.vat != vat:
-                partner.write({"vat": vat})
+        if company_identifier:
+            # the company_identifier is a commercial field: it always belongs to the
+            # account
+            company_identifier = "".join(company_identifier.split()).upper()
+            if partner.siret != company_identifier:
+                partner.write({"siret": company_identifier})
         partner.fr_directory_sync_button()
         return partner._get_shopinvader_fr_directory_lines()

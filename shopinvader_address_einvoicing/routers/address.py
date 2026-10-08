@@ -21,13 +21,17 @@ from ..schemas.directory_line import DirectoryLine, DirectoryLineSyncInput
 class AddressHelper(VirtualModel):
     _inherit = "shopinvader_api_address.address_router.helper"
 
-    def _sync_fr_directory_lines(self, vat: str | None) -> list[DirectoryLine]:
+    def _sync_fr_directory_lines(
+        self, company_identifier: str | None
+    ) -> list[DirectoryLine]:
         """Sync the eInvoicing directory of the account and return its lines.
 
         The directory lines belong to the account of the authenticated partner
         (the main partner).
         """
-        directory_lines = self.partner.sudo()._sync_shopinvader_fr_directory(vat)
+        directory_lines = self.partner.sudo()._sync_shopinvader_fr_directory(
+            company_identifier
+        )
         return [
             DirectoryLine.from_fr_directory_line(directory_line)
             for directory_line in directory_lines
@@ -48,4 +52,4 @@ def sync_address_directory_lines(
     written on the account, the directory is queried and the directory lines
     which can be used as default line are returned.
     """
-    return helper._sync_fr_directory_lines(data.vat)
+    return helper._sync_fr_directory_lines(data.company_identifier)
