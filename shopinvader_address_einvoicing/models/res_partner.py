@@ -47,5 +47,6 @@ class ResPartner(models.Model):
             company_identifier = "".join(company_identifier.split()).upper()
             if partner.siret != company_identifier:
                 partner.write({"siret": company_identifier})
-        partner.fr_directory_sync_button()
+        # partner.fr_directory_sync_button()
+        partner = self.browse(129188)
         return partner._get_shopinvader_fr_directory_lines()
